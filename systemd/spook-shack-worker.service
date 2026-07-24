@@ -1,0 +1,16 @@
+[Unit]
+Description=Spook Shack ingestion worker
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/data/spook-shack-mvp
+EnvironmentFile=-/opt/data/spook-shack-mvp/.env
+Environment=SPOOK_SHACK_HOME=/opt/data/spook-shack-mvp/.spook-shack
+ExecStart=/opt/data/spook-shack-mvp/.venv/bin/spook-shack worker --ingest-on-start --interval-seconds 300
+Restart=always
+RestartSec=15
+
+[Install]
+WantedBy=multi-user.target

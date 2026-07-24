@@ -1,0 +1,17 @@
+[Unit]
+Description=Spook Shack threat-intelligence stack (Docker)
+Wants=network-online.target docker.service
+After=network-online.target docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/opt/data/spook-shack-mvp
+ExecStart=/bin/bash /opt/data/spook-shack-mvp/scripts/docker-up.sh
+ExecStop=/bin/bash /opt/data/spook-shack-mvp/scripts/docker-down.sh
+TimeoutStartSec=0
+TimeoutStopSec=120
+
+[Install]
+WantedBy=multi-user.target

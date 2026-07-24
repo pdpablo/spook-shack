@@ -1,0 +1,1 @@
+"""Spook Shack MVP package."""
