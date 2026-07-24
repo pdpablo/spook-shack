@@ -52,7 +52,7 @@ sudo ./scripts/install-native.sh
 sudo ./scripts/install-tor-hidden-service.sh
 ```
 
-This keeps the API on `127.0.0.1:8000` and exposes it through Tor as an onion service on port 80. If you prefer Tailscale access, keep the app bound to localhost and front it with your preferred Tailscale exposure method.
+This keeps the API on `127.0.0.1:8000` and exposes it through Tor as an onion service on port 80. If you prefer Tailscale access, keep the app bound to localhost and use the Raspberry Pi deployment guide in `docs/raspberry-pi-deploy.md`.
 
 ## Docker deployment
 
