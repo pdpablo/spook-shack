@@ -9,5 +9,6 @@ __pycache__/
 *.db
 .env
 .env.*
+!.env.example
 .DS_Store
 spook_shack_mvp.egg-info/

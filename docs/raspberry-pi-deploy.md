@@ -19,7 +19,13 @@ On the Pi, make sure these are installed:
 - `systemd`
 - `tailscale`
 
-If `uv` is missing, install it first using the method you prefer on Kali.
+If `uv` is missing, install it with:
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+Then restart your shell so `uv` is on `PATH`.
 
 ## 1) Clone the repo
 

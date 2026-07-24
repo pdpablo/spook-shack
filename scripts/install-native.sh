@@ -12,7 +12,8 @@ if ! command -v systemctl >/dev/null 2>&1; then
 fi
 
 if ! command -v uv >/dev/null 2>&1; then
-  echo "uv not found; install uv first." >&2
+  echo "uv not found; install it with: curl -LsSf https://astral.sh/uv/install.sh | sh" >&2
+  echo "After install, restart your shell so uv is on PATH." >&2
   exit 1
 fi
 
