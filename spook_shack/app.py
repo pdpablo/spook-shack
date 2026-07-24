@@ -341,7 +341,6 @@ def create_app() -> FastAPI:
     @app.get("/", response_class=HTMLResponse)
     def dashboard() -> HTMLResponse:
         with service.connect() as conn:
-            ensure_intel_schema(conn)
             overview = service.get_overview(conn, role="analyst")
             correlation = service.get_correlation_summary(conn)
         body = _dashboard_body(overview, correlation)

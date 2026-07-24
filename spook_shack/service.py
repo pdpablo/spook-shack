@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import contextlib
 import json
 import os
 import sqlite3
@@ -124,6 +125,24 @@ def key_path() -> Path:
 def _ensure_home() -> None:
     spook_shack_home().mkdir(parents=True, exist_ok=True)
 
+
+@contextlib.contextmanager
+def _init_lock() -> Any:
+    lock_path = db_path().with_suffix(".init.lock")
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(lock_path, "a+b") as handle:
+        try:
+            import fcntl
+        except Exception:  # pragma: no cover - non-Linux fallback
+            yield
+            return
+        fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+        try:
+            yield
+        finally:
+            fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+
+
 def _connect_raw() -> sqlite3.Connection:
     _ensure_home()
     conn = sqlite3.connect(db_path(), timeout=60)
@@ -133,6 +152,7 @@ def _connect_raw() -> sqlite3.Connection:
     conn.execute("PRAGMA synchronous = NORMAL")
     conn.execute("PRAGMA busy_timeout = 60000")
     return conn
+
 
 SCHEMA = (
     "CREATE TABLE IF NOT EXISTS roles (name TEXT PRIMARY KEY, description TEXT NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL)",
@@ -150,13 +170,25 @@ ROLE_SEEDS = (
     ("analyst", "Can review intelligence, create notes, and read dashboards."),
 )
 
+
 def connect() -> sqlite3.Connection:
     conn = _connect_raw()
-    for sql in SCHEMA:
-        conn.execute(sql)
-    _seed_roles(conn)
-    _seed_sources(conn)
+    initialize_database(conn)
     return conn
+
+
+def initialize_database(conn: sqlite3.Connection) -> None:
+    with _init_lock():
+        for sql in SCHEMA:
+            conn.execute(sql)
+        roles_count = conn.execute("SELECT COUNT(*) FROM roles").fetchone()[0] or 0
+        sources_count = conn.execute("SELECT COUNT(*) FROM source_definitions").fetchone()[0] or 0
+        if roles_count == 0:
+            _seed_roles(conn)
+        if sources_count == 0:
+            _seed_sources(conn)
+        conn.commit()
+
 
 def _seed_roles(conn: sqlite3.Connection) -> None:
     now = utc_now()
@@ -165,6 +197,7 @@ def _seed_roles(conn: sqlite3.Connection) -> None:
             "INSERT OR IGNORE INTO roles (name, description, created_at, updated_at) VALUES (?, ?, ?, ?)",
             (name, description, now, now),
         )
+
 
 def _seed_sources(conn: sqlite3.Connection) -> None:
     now = utc_now()

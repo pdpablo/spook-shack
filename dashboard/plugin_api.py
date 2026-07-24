@@ -71,7 +71,6 @@ def _role(request: Request) -> str:
 @router.get("/health")
 def health() -> dict[str, Any]:
     with connect() as conn:
-        ensure_intel_schema(conn)
         return {
             "ok": True,
             "db_path": str(conn.execute("PRAGMA database_list").fetchone()[2]),
@@ -84,7 +83,6 @@ def health() -> dict[str, Any]:
 @router.get("/overview")
 def overview(request: Request) -> dict[str, Any]:
     with connect() as conn:
-        ensure_intel_schema(conn)
         overview = get_overview(conn, role=_role(request))
         overview["correlation"] = correlation_summary(conn)
         return overview
@@ -92,7 +90,6 @@ def overview(request: Request) -> dict[str, Any]:
 @router.get("/roadmap")
 def roadmap() -> dict[str, Any]:
     with connect() as conn:
-        ensure_intel_schema(conn)
         return {"roadmap": get_overview(conn).get("roadmap", [])}
 
 @router.get("/sources")
@@ -162,7 +159,6 @@ def add_note(request: Request, payload: NotePayload) -> dict[str, Any]:
 @router.get("/correlation")
 def correlation() -> dict[str, Any]:
     with connect() as conn:
-        ensure_intel_schema(conn)
         return {
             "summary": correlation_summary(conn),
             "clusters": cluster_rows(conn, limit=25),
@@ -173,7 +169,6 @@ def correlation() -> dict[str, Any]:
 def ingest_one(source_key: str, request: Request) -> dict[str, Any]:
     role = _role(request)
     with connect() as conn:
-        ensure_intel_schema(conn)
         try:
             return {"ok": True, "result": ingest_source(conn, source_key, actor_role=role)}
         except PermissionError as exc:
@@ -185,7 +180,6 @@ def ingest_one(source_key: str, request: Request) -> dict[str, Any]:
 def ingest_everything(request: Request) -> dict[str, Any]:
     role = _role(request)
     with connect() as conn:
-        ensure_intel_schema(conn)
         try:
             return {"ok": True, "results": ingest_all_sources(conn, actor_role=role)}
         except PermissionError as exc:
