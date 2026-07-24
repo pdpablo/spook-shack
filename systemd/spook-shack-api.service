@@ -5,10 +5,10 @@ After=network-online.target
 
 [Service]
 Type=simple
-WorkingDirectory=/opt/data/spook-shack-mvp
-EnvironmentFile=-/opt/data/spook-shack-mvp/.env
-Environment=SPOOK_SHACK_HOME=/opt/data/spook-shack-mvp/.spook-shack
-ExecStart=/opt/data/spook-shack-mvp/.venv/bin/spook-shack serve --host 127.0.0.1 --port 8000 --log-level info
+WorkingDirectory=@SPOOK_SHACK_ROOT@
+EnvironmentFile=-@SPOOK_SHACK_ROOT@/.env
+Environment=SPOOK_SHACK_HOME=@SPOOK_SHACK_ROOT@/.spook-shack
+ExecStart=@SPOOK_SHACK_ROOT@/.venv/bin/spook-shack serve --host 127.0.0.1 --port 8000 --log-level info
 Restart=always
 RestartSec=5
 

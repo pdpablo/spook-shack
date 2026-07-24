@@ -32,8 +32,14 @@ else
   SUDO=
 fi
 
-$SUDO install -Dm644 "$ROOT_DIR/systemd/spook-shack-api.service" "$UNIT_API"
-$SUDO install -Dm644 "$ROOT_DIR/systemd/spook-shack-worker.service" "$UNIT_WORKER"
+render_unit() {
+  local src="$1"
+  local dst="$2"
+  sed "s|@SPOOK_SHACK_ROOT@|$ROOT_DIR|g" "$src" | $SUDO tee "$dst" >/dev/null
+}
+
+render_unit "$ROOT_DIR/systemd/spook-shack-api.service" "$UNIT_API"
+render_unit "$ROOT_DIR/systemd/spook-shack-worker.service" "$UNIT_WORKER"
 $SUDO systemctl daemon-reload
 $SUDO systemctl enable spook-shack-api.service
 $SUDO systemctl enable spook-shack-worker.service
