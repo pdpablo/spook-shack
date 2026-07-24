@@ -6,6 +6,7 @@ import contextlib
 import json
 import os
 import sqlite3
+import time
 import uuid
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -148,7 +149,6 @@ def _connect_raw() -> sqlite3.Connection:
     conn = sqlite3.connect(db_path(), timeout=60)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
-    conn.execute("PRAGMA journal_mode = WAL")
     conn.execute("PRAGMA synchronous = NORMAL")
     conn.execute("PRAGMA busy_timeout = 60000")
     return conn
@@ -178,16 +178,24 @@ def connect() -> sqlite3.Connection:
 
 
 def initialize_database(conn: sqlite3.Connection) -> None:
-    with _init_lock():
-        for sql in SCHEMA:
-            conn.execute(sql)
-        roles_count = conn.execute("SELECT COUNT(*) FROM roles").fetchone()[0] or 0
-        sources_count = conn.execute("SELECT COUNT(*) FROM source_definitions").fetchone()[0] or 0
-        if roles_count == 0:
-            _seed_roles(conn)
-        if sources_count == 0:
-            _seed_sources(conn)
-        conn.commit()
+    for attempt in range(10):
+        try:
+            with _init_lock():
+                conn.execute("PRAGMA journal_mode = WAL")
+                for sql in SCHEMA:
+                    conn.execute(sql)
+                roles_count = conn.execute("SELECT COUNT(*) FROM roles").fetchone()[0] or 0
+                sources_count = conn.execute("SELECT COUNT(*) FROM source_definitions").fetchone()[0] or 0
+                if roles_count == 0:
+                    _seed_roles(conn)
+                if sources_count == 0:
+                    _seed_sources(conn)
+                conn.commit()
+            return
+        except sqlite3.OperationalError as exc:
+            if "locked" not in str(exc).lower() or attempt == 9:
+                raise
+            time.sleep(min(0.25 * (2 ** attempt), 5.0))
 
 
 def _seed_roles(conn: sqlite3.Connection) -> None:
