@@ -238,6 +238,16 @@ def audit_event(conn: sqlite3.Connection, actor_role: str, action: str, subject_
         (new_id("audit"), normalize_role(actor_role), action, subject_type, subject_id, json.dumps(payload or {}, sort_keys=True), utc_now()),
     )
 
+def _with_retry(fn, *, attempts: int = 10) -> Any:
+    for attempt in range(attempts):
+        try:
+            return fn()
+        except sqlite3.OperationalError as exc:
+            if "locked" not in str(exc).lower() or attempt == attempts - 1:
+                raise
+            time.sleep(min(0.25 * (2 ** attempt), 5.0))
+
+
 def _json(value: str | None, default: Any) -> Any:
     if not value:
         return default
@@ -297,10 +307,13 @@ def decrypt_source_credentials(token: str | None) -> dict[str, Any] | None:
 def set_source_credentials(conn: sqlite3.Connection, source_key: str, credentials: Mapping[str, Any] | str, *, actor_role: str = "admin") -> dict[str, Any]:
     require_admin(actor_role)
     encrypted = encrypt_source_credentials(credentials)
-    cur = conn.execute("UPDATE source_definitions SET encrypted_credentials = ?, updated_at = ? WHERE source_key = ?", (encrypted, utc_now(), source_key))
+    def _write() -> sqlite3.Cursor:
+        return conn.execute("UPDATE source_definitions SET encrypted_credentials = ?, updated_at = ? WHERE source_key = ?", (encrypted, utc_now(), source_key))
+    cur = _with_retry(_write)
     if cur.rowcount == 0:
         raise KeyError(f"unknown source {source_key!r}")
     audit_event(conn, actor_role, "source_credentials_set", "source", source_key, {"source_key": source_key})
+    conn.commit()
     return {"source_key": source_key, "credential_state": "encrypted"}
 
 def get_source_credentials(conn: sqlite3.Connection, source_key: str) -> dict[str, Any] | None:

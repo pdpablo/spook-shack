@@ -393,17 +393,17 @@ async def _collect_telegram_async(source: Mapping[str, Any], credentials: Mappin
         return []
     session_name = str(credentials.get("session_name") or f"spook-shack-{source['source_key']}")
     limit = int(credentials.get("limit") or 100)
-    bot_token = credentials.get("bot_token")
-    phone = credentials.get("phone")
+    bot_token = str(credentials.get("bot_token") or "").strip()
+    phone = str(credentials.get("phone") or "").strip()
+    if not bot_token and not phone:
+        raise RuntimeError("telegram collection is disabled without bot_token or phone; interactive login is not allowed in systemd")
     records: list[CollectedRecord] = []
 
     async with TelegramClient(session_name, int(api_id), str(api_hash)) as client:
         if bot_token:
-            await client.start(bot_token=str(bot_token))
-        elif phone:
-            await client.start(phone=str(phone))
+            await client.start(bot_token=bot_token)
         else:
-            await client.start()
+            await client.start(phone=phone)
         for channel in channels:
             async for message in client.iter_messages(channel, limit=limit):
                 text = message.message or ""
@@ -642,6 +642,11 @@ def ingest_all_sources(conn, *, actor_role: str = "admin", transport: httpx.Base
             continue
         try:
             results.append(ingest_source(conn, key, actor_role=actor_role, transport=transport))
+        except RuntimeError as exc:
+            if key == "telegram-leaks" and "interactive login" in str(exc).lower():
+                results.append({"source_key": key, "status": "skipped", "error": str(exc)})
+            else:
+                results.append({"source_key": key, "status": "failed", "error": str(exc)})
         except Exception as exc:
             results.append({"source_key": key, "status": "failed", "error": str(exc)})
     return results
