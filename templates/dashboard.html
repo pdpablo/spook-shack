@@ -1,10 +1,20 @@
 {% extends "base.html" %}
 {% block content %}
-<header class="topbar">
-  <div>
+<header class="topbar hero-topbar">
+  <div class="hero-copy">
     <p class="eyebrow">Spook Shack // CTI Lab</p>
     <h1>Universal Intelligence Dashboard</h1>
-    <p class="lede">Signed in as <strong>{{ user.username }}</strong> · role <strong>{{ user.role }}</strong></p>
+    <p class="lede">
+      Signed in as <strong>{{ user.username }}</strong> · role <strong>{{ user.role }}</strong>
+      · showing <strong>{{ visible_item_count }}</strong> of <strong>{{ filtered_item_count }}</strong> matching items.
+    </p>
+    <div class="tag-row">
+      <span>Sources {{ summary.source_count }}</span>
+      <span>Items {{ summary.item_count }}</span>
+      <span>True positives {{ summary.true_positive_count }}</span>
+      <span>Unknown {{ summary.unknown_count }}</span>
+      <span>Avg confidence {{ visible_average_confidence }}%</span>
+    </div>
   </div>
   <div class="topbar-actions">
     <form method="post" action="/demo/ingest">
@@ -17,16 +27,82 @@
 </header>
 
 <section class="metrics-grid">
-  <article class="metric-card"><span>Sources</span><strong>{{ summary.source_count }}</strong></article>
-  <article class="metric-card"><span>Items</span><strong>{{ summary.item_count }}</strong></article>
-  <article class="metric-card"><span>True positives</span><strong>{{ summary.true_positive_count }}</strong></article>
-  <article class="metric-card"><span>False positives</span><strong>{{ summary.false_positive_count }}</strong></article>
+  <article class="metric-card">
+    <span>Sources</span>
+    <strong>{{ summary.source_count }}</strong>
+    <small>{{ source_stats|length }} configured</small>
+  </article>
+  <article class="metric-card">
+    <span>Visible items</span>
+    <strong>{{ visible_item_count }}</strong>
+    <small>{{ filtered_item_count }} match the current filters</small>
+  </article>
+  <article class="metric-card">
+    <span>True positives</span>
+    <strong>{{ summary.true_positive_count }}</strong>
+    <small>Confirmed signals in the corpus</small>
+  </article>
+  <article class="metric-card">
+    <span>Unknown / false</span>
+    <strong>{{ summary.unknown_count + summary.false_positive_count }}</strong>
+    <small>Still needs analyst attention</small>
+  </article>
+</section>
+
+<section class="panel filter-panel">
+  <div class="section-title">
+    <div>
+      <p class="eyebrow">Refine the view</p>
+      <h2>Search, sort, and narrow the feed</h2>
+    </div>
+    <a class="ghost-link" href="/">Clear filters</a>
+  </div>
+  <form method="get" action="/" class="filter-form">
+    <label class="grow">
+      <span>Search</span>
+      <input name="q" type="search" placeholder="title, summary, indicator, or source" value="{{ filters.q }}" />
+    </label>
+    <label>
+      <span>Source</span>
+      <select name="source_id">
+        <option value="">All sources</option>
+        {% for source in sources %}
+        <option value="{{ source.id }}" {% if filters.source_id|string == source.id|string %}selected{% endif %}>{{ source.name }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>
+      <span>Verdict</span>
+      <select name="verdict">
+        <option value="">Any verdict</option>
+        <option value="unknown" {% if filters.verdict == 'unknown' %}selected{% endif %}>unknown</option>
+        <option value="true_positive" {% if filters.verdict == 'true_positive' %}selected{% endif %}>true_positive</option>
+        <option value="false_positive" {% if filters.verdict == 'false_positive' %}selected{% endif %}>false_positive</option>
+      </select>
+    </label>
+    <label>
+      <span>Sort</span>
+      <select name="sort">
+        <option value="newest" {% if filters.sort == 'newest' %}selected{% endif %}>Newest</option>
+        <option value="oldest" {% if filters.sort == 'oldest' %}selected{% endif %}>Oldest</option>
+        <option value="highest_confidence" {% if filters.sort == 'highest_confidence' %}selected{% endif %}>Highest confidence</option>
+        <option value="lowest_confidence" {% if filters.sort == 'lowest_confidence' %}selected{% endif %}>Lowest confidence</option>
+      </select>
+    </label>
+    <div class="search-actions">
+      <button type="submit" class="primary">Apply filters</button>
+      <a class="ghost-link" href="/">Reset</a>
+    </div>
+  </form>
 </section>
 
 <section class="content-grid">
   <div class="panel">
     <div class="section-title">
-      <h2>Sources</h2>
+      <div>
+        <p class="eyebrow">Source registry</p>
+        <h2>Sources</h2>
+      </div>
       {% if user.role == 'admin' %}
       <span class="badge admin">admin</span>
       {% endif %}
@@ -73,16 +149,22 @@
     {% endif %}
 
     <div class="source-list">
-      {% for source in sources %}
+      {% for source, item_count in source_stats %}
       <article class="source-card">
-        <div>
-          <h3>{{ source.name }}</h3>
-          <p>{{ source.source_type }} · {{ source.access_method }}</p>
-          <p class="muted">Schedule: {{ source.schedule }}</p>
-          <p class="muted">Rate limit: {{ source.rate_limit_per_minute }}/min</p>
+        <div class="source-main">
+          <div>
+            <h3>{{ source.name }}</h3>
+            <p>{{ source.source_type }} · {{ source.access_method }}</p>
+            {% if source.url %}
+            <p class="muted"><a href="{{ source.url }}" target="_blank" rel="noreferrer">{{ source.url }}</a></p>
+            {% endif %}
+            <p class="muted">Schedule: {{ source.schedule }}</p>
+          </div>
+          <span class="source-count">{{ item_count }} items</span>
         </div>
         <div class="source-meta">
           <span class="pill {% if source.enabled %}good{% else %}dim{% endif %}">{{ 'enabled' if source.enabled else 'disabled' }}</span>
+          <span class="pill dim">{{ source.rate_limit_per_minute }}/min</span>
           {% if source.last_sync_at %}
           <span class="muted">Last sync: {{ source.last_sync_at }}</span>
           {% else %}
@@ -96,21 +178,27 @@
 
   <div class="panel">
     <div class="section-title">
-      <h2>Recent intelligence</h2>
-      <span class="pill accent">correlated view</span>
+      <div>
+        <p class="eyebrow">Correlation feed</p>
+        <h2>Recent intelligence</h2>
+      </div>
+      <span class="pill accent">{{ visible_item_count }} visible</span>
     </div>
     <div class="item-list">
       {% for item, source_name, note_rows in items %}
-      <article class="item-card">
+      <article class="item-card verdict-{{ item.verdict }}">
         <div class="item-header">
           <div>
             <h3>{{ item.title }}</h3>
             <p class="muted">{{ source_name }} · {{ item.observable_type }}: {{ item.observable_value }}</p>
           </div>
           <div class="item-tags">
-            <span class="pill">confidence {{ item.confidence }}</span>
+            <span class="pill">confidence {{ item.confidence }}%</span>
             <span class="pill {% if item.verdict == 'true_positive' %}good{% elif item.verdict == 'false_positive' %}bad{% else %}dim{% endif %}">{{ item.verdict }}</span>
           </div>
+        </div>
+        <div class="confidence-track" aria-label="Confidence {{ item.confidence }} percent">
+          <span style="width: {{ item.confidence }}%"></span>
         </div>
         <p>{{ item.summary }}</p>
         {% if item.raw_excerpt %}<pre class="excerpt">{{ item.raw_excerpt }}</pre>{% endif %}
@@ -150,19 +238,31 @@
         </div>
         {% endif %}
       </article>
+      {% else %}
+      <div class="empty-state">
+        <h3>No items match the current filters</h3>
+        <p>Try clearing the search term, selecting a different source, or switching the verdict filter.</p>
+        <a class="ghost-link" href="/">Clear filters</a>
+      </div>
       {% endfor %}
     </div>
   </div>
 
   <div class="panel">
     <div class="section-title">
-      <h2>Future-tech forecast</h2>
+      <div>
+        <p class="eyebrow">Forecasting</p>
+        <h2>Future-tech forecast</h2>
+      </div>
       <span class="pill accent">hermes report intake</span>
     </div>
     <div class="forecast-list">
       {% for f in forecasts %}
       <article class="forecast-card">
-        <h3>{{ f.title }}</h3>
+        <div class="forecast-header">
+          <h3>{{ f.title }}</h3>
+          <span class="pill dim">{{ f.confidence }}%</span>
+        </div>
         <p class="muted">{{ f.technology_class }} · confidence {{ f.confidence }}</p>
         <p><strong>Related tech:</strong> {{ f.related_technology }}</p>
         <p><strong>Attack surface:</strong> {{ f.attack_surface }}</p>

@@ -9,7 +9,7 @@ from fastapi import Depends, FastAPI, Form, HTTPException, Request, status
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from starlette.middleware.sessions import SessionMiddleware
 
 from .db import Base, SessionLocal, engine
@@ -180,22 +180,59 @@ def logout(request: Request):
 
 
 @app.get("/", response_class=HTMLResponse)
-def dashboard(request: Request, db=Depends(get_db)):
+def dashboard(
+    request: Request,
+    q: str | None = None,
+    verdict: str | None = None,
+    source_id: int | None = None,
+    sort: str = "newest",
+    db=Depends(get_db),
+):
     user = current_user(request, db)
     if not user:
         return RedirectResponse(url="/login", status_code=status.HTTP_303_SEE_OTHER)
 
     sources = db.execute(select(Source).order_by(Source.name)).scalars().all()
-    items = db.execute(
-        select(IntelligenceItem, Source.name)
-        .join(Source, Source.id == IntelligenceItem.source_id)
-        .order_by(IntelligenceItem.created_at.desc())
-        .limit(20)
+    source_stats = db.execute(
+        select(Source, func.count(IntelligenceItem.id))
+        .outerjoin(IntelligenceItem, IntelligenceItem.source_id == Source.id)
+        .group_by(Source.id)
+        .order_by(Source.name)
     ).all()
+
+    item_stmt = select(IntelligenceItem, Source.name).join(Source, Source.id == IntelligenceItem.source_id)
+    search_term = (q or "").strip()
+    if search_term:
+        pattern = f"%{search_term}%"
+        item_stmt = item_stmt.where(
+            or_(
+                IntelligenceItem.title.ilike(pattern),
+                IntelligenceItem.summary.ilike(pattern),
+                IntelligenceItem.observable_value.ilike(pattern),
+                Source.name.ilike(pattern),
+            )
+        )
+    if verdict in {"unknown", "true_positive", "false_positive"}:
+        item_stmt = item_stmt.where(IntelligenceItem.verdict == verdict)
+    if source_id is not None:
+        item_stmt = item_stmt.where(IntelligenceItem.source_id == source_id)
+
+    sort_options = {
+        "newest": IntelligenceItem.created_at.desc(),
+        "oldest": IntelligenceItem.created_at.asc(),
+        "highest_confidence": IntelligenceItem.confidence.desc(),
+        "lowest_confidence": IntelligenceItem.confidence.asc(),
+    }
+    item_stmt = item_stmt.order_by(sort_options.get(sort, IntelligenceItem.created_at.desc()))
+
+    total_items = db.execute(select(func.count(IntelligenceItem.id))).scalar_one()
+    filtered_item_count = db.execute(select(func.count()).select_from(item_stmt.subquery())).scalar_one()
+    items = db.execute(item_stmt.limit(20)).all()
     forecasts = db.execute(select(ForecastItem).order_by(ForecastItem.created_at.desc())).scalars().all()
     summary = dashboard_summary_data(db)
 
     rendered_items = []
+    visible_confidence_total = 0
     for item, source_name in items:
         note_rows = db.execute(
             select(AnalystNote, User.username)
@@ -204,6 +241,16 @@ def dashboard(request: Request, db=Depends(get_db)):
             .order_by(AnalystNote.created_at.desc())
         ).all()
         rendered_items.append((item, source_name, note_rows))
+        visible_confidence_total += item.confidence
+
+    dashboard_filters = {
+        "q": search_term,
+        "verdict": verdict if verdict in {"unknown", "true_positive", "false_positive"} else "",
+        "source_id": source_id or "",
+        "sort": sort if sort in sort_options else "newest",
+    }
+    visible_item_count = len(rendered_items)
+    visible_average_confidence = round(visible_confidence_total / visible_item_count) if visible_item_count else 0
 
     return TEMPLATES.TemplateResponse(
         request,
@@ -211,9 +258,15 @@ def dashboard(request: Request, db=Depends(get_db)):
         {
             "user": user,
             "sources": sources,
+            "source_stats": source_stats,
             "items": rendered_items,
             "forecasts": forecasts,
             "summary": summary,
+            "total_item_count": total_items,
+            "filtered_item_count": filtered_item_count,
+            "visible_item_count": visible_item_count,
+            "visible_average_confidence": visible_average_confidence,
+            "filters": dashboard_filters,
         },
     )
 

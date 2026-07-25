@@ -67,6 +67,31 @@ def test_dashboard_routes_render(isolated_home):
     assert "ransomware.live" in sources_response.text
 
 
+def test_dashboard_search_filters_and_sort(isolated_home):
+    from app.db import Base, SessionLocal, engine
+    from app.main import app as full_app, seed_demo_data
+
+    Base.metadata.create_all(bind=engine)
+    with SessionLocal() as db:
+        seed_demo_data(db)
+
+    async def run():
+        transport = httpx.ASGITransport(app=full_app)
+        async with httpx.AsyncClient(transport=transport, base_url="http://testserver", follow_redirects=True) as client:
+            await client.post("/login", data={"username": "admin", "password": "spookshack-admin"})
+            response = await client.get(
+                "/",
+                params={"q": "phish", "verdict": "true_positive", "sort": "highest_confidence"},
+            )
+            return response
+
+    response = asyncio.run(run())
+
+    assert response.status_code == 200
+    assert "New phishing lure" in response.text
+    assert "ALPHV leak post" not in response.text
+
+
 def test_seeds_default_sources_and_roadmap(isolated_home):
     with service.connect() as conn:
         sources = service.list_sources(conn)
