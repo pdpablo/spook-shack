@@ -60,7 +60,8 @@ TG_LIMIT=100
 ```
 
 5. Deploy. The container will persist its SQLite state in the `spook-shack-data` volume.
-6. If Hostinger still says the app cannot be reached, confirm the service is published on port `8080` in the Docker Manager UI and redeploy using the Hostinger compose file.
+6. If Hostinger still says the app cannot be reached, confirm the service is bound to `spook-shack.com` / `www.spook-shack.com` in Docker Manager and redeploy using the Hostinger compose file.
+7. If the page still shows the Hostinger default site, the domain is likely pointing at the VPS correctly but is not attached to the container route yet. Re-check the Traefik/domain binding in Hostinger.
 
 ## Next step
 
