@@ -44,9 +44,10 @@ docker compose up --build
 
 1. Push changes to `main` on GitHub.
 2. The workflow in `.github/workflows/publish-ghcr.yml` builds and publishes `ghcr.io/pdpablo/spook-shack:latest`.
-3. Make sure the GHCR package is public, or give Hostinger registry credentials if you want to keep it private.
-4. In Hostinger Docker Manager, use `docker-compose.hostinger.yml` as the compose file.
-5. Paste these environment variables into hPanel:
+3. For releases, tag the repo with something like `v1.0.0`; `.github/workflows/release-ghcr.yml` publishes `ghcr.io/pdpablo/spook-shack:v1.0.0`.
+4. Make sure the GHCR package is public, or give Hostinger registry credentials if you want to keep it private.
+5. In Hostinger Docker Manager, use `docker-compose.hostinger.yml` as the compose file.
+6. Paste these environment variables into hPanel:
 
 ```env
 SPOOK_SHACK_HOME=/data
@@ -60,9 +61,9 @@ TG_SESSION_NAME=spook-shack
 TG_LIMIT=100
 ```
 
-6. Deploy. The container will persist its SQLite state in the `spook-shack-data` volume.
-7. Attach the domain to the app in Hostinger (`spook-shack.com` and `www.spook-shack.com`).
-8. If the page still shows the Hostinger default site, the DNS is probably fine but the container route is not attached yet. Re-check the Traefik/domain binding in Hostinger.
+7. Deploy. The container will persist its SQLite state in the `spook-shack-data` volume.
+8. Attach the domain to the app in Hostinger (`spook-shack.com` and `www.spook-shack.com`).
+9. If the page still shows the Hostinger default site, the DNS is probably fine but the container route is not attached yet. Re-check the Traefik/domain binding in Hostinger.
 
 ## Next step
 
