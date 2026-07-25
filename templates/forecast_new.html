@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="topbar hero-topbar">
+  <div class="hero-copy">
+    <p class="eyebrow">Import forecast</p>
+    <h1>Forecast brief workspace</h1>
+    <p class="lede">Move Hermes-agent forecast intake onto its own page so the main Forecast screen can focus on browsing cards and briefs.</p>
+    <div class="tag-row">
+      <span>Admin only</span>
+      <span>Dedicated intake</span>
+      <span>JSON or form</span>
+    </div>
+  </div>
+</header>
+
+<section class="content-grid">
+  <div class="panel">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">Import</p>
+        <h2>Hermes-agent report intake</h2>
+      </div>
+    </div>
+
+    <form method="post" action="/forecast/import-form" class="form-stack">
+      <div class="dual">
+        <label><span>Title</span><input name="title" type="text" required placeholder="Passkey-less enclave browser extensions" /></label>
+        <label><span>Classification</span><input name="classification" type="text" required placeholder="emerging-technology" /></label>
+      </div>
+      <div class="dual">
+        <label><span>Related technology</span><input name="related_technology" type="text" required placeholder="browser extensions, identity platforms" /></label>
+        <label><span>Existing technology</span><input name="existing_technology" type="text" required placeholder="OAuth, MFA, endpoint controls" /></label>
+      </div>
+      <div class="dual">
+        <label><span>Confidence</span><input name="confidence" type="number" min="0" max="100" value="50" /></label>
+        <label><span>Source note</span><input name="source_note" type="text" placeholder="research paper, RFC, vendor preview" /></label>
+      </div>
+      <label>
+        <span>Attack vectors (one per line)</span>
+        <textarea name="attack_vectors_text" rows="4" placeholder="phishing-induced enrollment\napi abuse during rollout\nsupply-chain override"></textarea>
+      </label>
+      <label>
+        <span>How threat actors may use it (one per line)</span>
+        <textarea name="threat_actor_use_text" rows="4" placeholder="credential capture\npersistence via trusted integration\nstealthy exfiltration"></textarea>
+      </label>
+      <label>
+        <span>Summary</span>
+        <textarea name="summary" rows="4" placeholder="Why this technology matters and how it shifts the attack surface."></textarea>
+      </label>
+      <label>
+        <span>Raw Hermes report JSON (optional)</span>
+        <textarea name="raw_report_json" rows="5" placeholder='{"title": "...", "source": "Hermes agent"}'></textarea>
+      </label>
+      <button type="submit" class="primary">Import brief</button>
+    </form>
+  </div>
+
+  <div class="panel">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">Outline</p>
+        <h2>What the import stores</h2>
+      </div>
+    </div>
+    <ol>
+      <li>Title and classification for the future-tech topic.</li>
+      <li>Related and existing technology to show impact context.</li>
+      <li>Attack vectors and threat-actor reuse notes.</li>
+      <li>Optional raw JSON so the source material stays attached.</li>
+    </ol>
+    <div class="button-row" style="margin-top: 1rem;">
+      <a class="ghost" href="/forecast">Back to forecast board</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

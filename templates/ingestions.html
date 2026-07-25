@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="topbar hero-topbar">
+  <div class="hero-copy">
+    <p class="eyebrow">Ingestions</p>
+    <h1>Scheduled and manual run history</h1>
+    <p class="lede">Track queued source runs separately from source discovery and correlation, so ingestion stays visible as its own workflow.</p>
+  </div>
+</header>
+
+<section class="content-grid">
+  <div class="panel">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">Queue</p>
+        <h2>Manual ingest request</h2>
+      </div>
+      {% if user.role == 'admin' %}
+      <span class="badge admin">admin</span>
+      {% endif %}
+    </div>
+
+    {% if user.role == 'admin' %}
+    <div class="button-row">
+      <a class="primary" href="/ingestions/new">Queue ingest</a>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <h3>Analyst access</h3>
+      <p>Only admins can queue ingestion runs. Analysts can review the history below.</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="panel">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">History</p>
+        <h2>Recent ingestion runs</h2>
+      </div>
+    </div>
+
+    <table>
+      <thead><tr><th>Source</th><th>Status</th><th>Mode</th><th>Records</th><th>Requested by</th><th>Created</th></tr></thead>
+      <tbody>
+        {% for run, source_name in runs %}
+        <tr>
+          <td>{{ source_name }}</td>
+          <td>{{ run.status }}</td>
+          <td>{{ run.mode }}</td>
+          <td>{{ run.records_seen }} / {{ run.records_normalized }}</td>
+          <td>{{ run.requested_by }}</td>
+          <td>{{ run.created_at }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="muted">No ingestion runs yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

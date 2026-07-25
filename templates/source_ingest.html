@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="topbar hero-topbar">
+  <div class="hero-copy">
+    <p class="eyebrow">Ingest source</p>
+    <h1>{{ source.name }}</h1>
+    <p class="lede">Use a dedicated page for the manual ingest action so the source detail screen can stay focused on policy, runs, and observed items.</p>
+    <div class="tag-row">
+      <span>{{ source.source_type }}</span>
+      <span>{{ source.schedule }}</span>
+      <span>{{ source.rate_limit_per_minute }}/min</span>
+    </div>
+  </div>
+</header>
+
+<section class="content-grid">
+  <div class="panel">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">Run</p>
+        <h2>Queue a manual ingest</h2>
+      </div>
+    </div>
+    <form method="post" action="/sources/{{ source.id }}/ingest" class="form-stack">
+      <button type="submit" class="primary">Ingest now</button>
+    </form>
+  </div>
+
+  <div class="panel">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">Guardrails</p>
+        <h2>Why this page exists</h2>
+      </div>
+    </div>
+    <div class="empty-state">
+      <h3>Action separation</h3>
+      <p>The ingest action is isolated here so the source detail page can remain a read-focused dashboard for policies, history, and downstream intelligence.</p>
+      <div class="button-row" style="margin-top: 1rem;">
+        <a class="ghost-link" href="/sources/{{ source.id }}">Back to source detail</a>
+        <a class="ghost-link" href="/sources">Registry</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

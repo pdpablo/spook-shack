@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="topbar hero-topbar">
+  <div class="hero-copy">
+    <p class="eyebrow">Build report</p>
+    <h1>Report draft workspace</h1>
+    <p class="lede">Move the generation form onto its own page so the main Reports screen can focus on history, while admins get a dedicated drafting workspace.</p>
+    <div class="tag-row">
+      <span>Admin only</span>
+      <span>Reusable outline</span>
+      <span>Separate screen</span>
+    </div>
+  </div>
+</header>
+
+<section class="content-grid">
+  <div class="panel">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">Create</p>
+        <h2>Generate a draft</h2>
+      </div>
+    </div>
+    <form method="post" action="/reports/draft" class="form-stack">
+      <label>
+        <span>Cadence</span>
+        <select name="cadence">
+          <option value="weekly">weekly</option>
+          <option value="monthly">monthly</option>
+          <option value="quarterly">quarterly</option>
+          <option value="annual">annual</option>
+        </select>
+      </label>
+      <button type="submit" class="primary">Build draft</button>
+      <p class="muted">This uses the shared Zeltser-aligned outline and writes the result to the report run history.</p>
+    </form>
+  </div>
+
+  <div class="panel">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">Template</p>
+        <h2>Zeltser outline</h2>
+      </div>
+    </div>
+    <ol>
+      {% for section in report_outline %}
+      <li>{{ section }}</li>
+      {% endfor %}
+    </ol>
+  </div>
+</section>
+
+<section class="panel" style="margin-top: 1rem;">
+  <div class="section-title">
+    <div>
+      <p class="eyebrow">Navigation</p>
+      <h2>Keep drafting separate from browsing</h2>
+    </div>
+  </div>
+  <div class="button-row">
+    <a class="ghost" href="/reports">Back to report history</a>
+    <a class="ghost" href="/forecast">Open Forecast</a>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="topbar hero-topbar">
+  <div class="hero-copy">
+    <p class="eyebrow">Governance</p>
+    <h1>Access control and secret hygiene</h1>
+    <p class="lede">Role segregation is enforced at the UI and backend layers. Open the dedicated user page to change roles and review the account.</p>
+  </div>
+</header>
+
+<section class="metrics-grid">
+  <article class="metric-card"><span>Admins</span><strong>{{ users | selectattr('role', 'equalto', 'admin') | list | length }}</strong><small>Users with full control</small></article>
+  <article class="metric-card"><span>Analysts</span><strong>{{ users | selectattr('role', 'equalto', 'analyst') | list | length }}</strong><small>Review-only users</small></article>
+  <article class="metric-card"><span>Sources</span><strong>{{ summary.source_count }}</strong><small>Registry entries</small></article>
+  <article class="metric-card"><span>Briefs</span><strong>{{ summary.future_brief_count }}</strong><small>Imported forecasts</small></article>
+</section>
+
+<section class="content-grid">
+  <div class="panel">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">Users</p>
+        <h2>Role assignments</h2>
+      </div>
+      {% if user.role == 'admin' %}
+      <span class="badge admin">admin</span>
+      {% endif %}
+    </div>
+    <table>
+      <thead><tr><th>Username</th><th>Role</th><th>Created</th><th>Action</th></tr></thead>
+      <tbody>
+        {% for item in users %}
+        <tr>
+          <td><a href="/governance/users/{{ item.id }}">{{ item.username }}</a></td>
+          <td>{{ item.role }}</td>
+          <td>{{ item.created_at }}</td>
+          <td><span class="muted">Open detail page</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="panel">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">Secrets</p>
+        <h2>Credential handling</h2>
+      </div>
+    </div>
+    <div class="empty-state">
+      <h3>Encrypted at rest</h3>
+      <p>Source credentials are encrypted using the configured Fernet key before being persisted in SQLite.</p>
+      <p class="muted">Use the Sources page to attach credentials to individual sources, then schedule the worker or manual ingest as needed.</p>
+    </div>
+
+    <div class="section-title" style="margin-top: 1rem;">
+      <div>
+        <p class="eyebrow">Registry</p>
+        <h2>Configured sources</h2>
+      </div>
+    </div>
+    <table>
+      <thead><tr><th>Name</th><th>Enabled</th><th>Rate</th><th>Schedule</th></tr></thead>
+      <tbody>
+        {% for source in sources %}
+        <tr>
+          <td>{{ source.name }}</td>
+          <td>{{ 'yes' if source.enabled else 'no' }}</td>
+          <td>{{ source.rate_limit_per_minute }}/min</td>
+          <td>{{ source.schedule }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

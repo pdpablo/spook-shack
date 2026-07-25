@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="topbar hero-topbar">
+  <div class="hero-copy">
+    <p class="eyebrow">Source detail</p>
+    <h1>{{ source.name }}</h1>
+    <p class="lede">A dedicated per-source dashboard with runs, items, notes, schedules, and rate-limit policy in one place.</p>
+    <div class="tag-row">
+      <span>{{ source.source_type }}</span>
+      <span>{{ source.access_method }}</span>
+      <span>{{ source.rate_limit_per_minute }}/min</span>
+    </div>
+  </div>
+  {% if user.role == 'admin' %}
+  <div class="button-row">
+    <a class="primary" href="/sources/{{ source.id }}/ingest">Ingest now</a>
+  </div>
+  {% endif %}
+</header>
+
+<section class="metrics-grid">
+  <article class="metric-card"><span>Enabled</span><strong>{{ 'Yes' if source.enabled else 'No' }}</strong><small>Registry status</small></article>
+  <article class="metric-card"><span>Schedule</span><strong>{{ source.schedule }}</strong><small>Cron expression</small></article>
+  <article class="metric-card"><span>Crawl delay</span><strong>{{ source.crawl_delay_seconds }}s</strong><small>Polite discovery</small></article>
+  <article class="metric-card"><span>Credentials</span><strong>{{ 'Stored' if source.encrypted_credentials else 'None' }}</strong><small>Encrypted at rest</small></article>
+</section>
+
+<section class="content-grid">
+  <div class="panel">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">Policy</p>
+        <h2>Source guidance</h2>
+      </div>
+    </div>
+    <div class="empty-state">
+      <h3>Acceptable-use notes</h3>
+      <p>{{ source.policy_notes }}</p>
+      {% if source.url %}<p class="muted"><a href="{{ source.url }}" target="_blank" rel="noreferrer">{{ source.url }}</a></p>{% endif %}
+      {% if source.feed_url %}<p class="muted">Feed: <a href="{{ source.feed_url }}" target="_blank" rel="noreferrer">{{ source.feed_url }}</a></p>{% endif %}
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">Recent runs</p>
+        <h2>Ingestion history</h2>
+      </div>
+    </div>
+    <table>
+      <thead><tr><th>Status</th><th>Mode</th><th>Seen</th><th>Normalized</th><th>Created</th></tr></thead>
+      <tbody>
+        {% for run in runs %}
+        <tr>
+          <td>{{ run.status }}</td>
+          <td>{{ run.mode }}</td>
+          <td>{{ run.records_seen }}</td>
+          <td>{{ run.records_normalized }}</td>
+          <td>{{ run.created_at }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" class="muted">No ingestion runs recorded for this source yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="content-grid" style="margin-top: 1rem;">
+  <div class="panel">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">Items</p>
+        <h2>Latest intelligence</h2>
+      </div>
+    </div>
+    <div class="item-list">
+      {% for item in items %}
+      <article class="item-card verdict-{{ item.verdict }}">
+        <div class="item-header">
+          <div>
+            <h3><a href="/items/{{ item.id }}">{{ item.title }}</a></h3>
+            <p class="muted">{{ item.observable_type }}: {{ item.observable_value }}</p>
+          </div>
+          <span class="pill {% if item.verdict == 'true_positive' %}good{% elif item.verdict == 'false_positive' %}bad{% else %}dim{% endif %}">{{ item.verdict }}</span>
+        </div>
+        <p>{{ item.summary }}</p>
+      </article>
+      {% else %}
+      <div class="empty-state">
+        <h3>No items yet</h3>
+        <p>Ingest this source to create normalized intelligence objects.</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">Analyst notes</p>
+        <h2>Verdict trail</h2>
+      </div>
+    </div>
+    <table>
+      <thead><tr><th>Item</th><th>Analyst</th><th>Verdict</th><th>Created</th></tr></thead>
+      <tbody>
+        {% for note, username, title in notes %}
+        <tr>
+          <td>{{ title }}</td>
+          <td>{{ username }}</td>
+          <td>{{ note.verdict }}</td>
+          <td>{{ note.created_at }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4" class="muted">No notes for this source yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

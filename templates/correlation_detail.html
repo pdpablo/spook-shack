@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="topbar hero-topbar">
+  <div class="hero-copy">
+    <p class="eyebrow">Correlation detail</p>
+    <h1>{{ cluster.cluster_type }}: {{ cluster.cluster_value }}</h1>
+    <p class="lede">Dedicated drill-down for one observable cluster, with its observations and relationship graph split off from the main correlation board.</p>
+    <div class="tag-row">
+      <span>Sources {{ cluster.source_count }}</span>
+      <span>Observations {{ cluster.observation_count }}</span>
+      <span>Score {{ cluster.score }}</span>
+    </div>
+  </div>
+</header>
+
+<section class="content-grid">
+  <div class="panel">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">Cluster</p>
+        <h2>Cluster metadata</h2>
+      </div>
+    </div>
+    <div class="empty-state">
+      <h3>{{ cluster.cluster_key }}</h3>
+      <p><strong>Type:</strong> {{ cluster.cluster_type }}</p>
+      <p><strong>Value:</strong> {{ cluster.cluster_value }}</p>
+      <p><strong>First seen:</strong> {{ cluster.first_seen }}</p>
+      <p><strong>Last seen:</strong> {{ cluster.last_seen }}</p>
+      <p class="muted"><strong>Metadata:</strong> {{ cluster.metadata_json }}</p>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">Observations</p>
+        <h2>Evidence instances</h2>
+      </div>
+    </div>
+    <table>
+      <thead><tr><th>Source</th><th>Record</th><th>Observable</th><th>Confidence</th><th>Created</th></tr></thead>
+      <tbody>
+        {% for obs in observations %}
+        <tr>
+          <td>{{ obs.source_key }}</td>
+          <td>{{ obs.raw_record_id }}</td>
+          <td>{{ obs.observable_type }}: {{ obs.observable_value }}</td>
+          <td>{{ obs.confidence }}</td>
+          <td>{{ obs.created_at }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" class="muted">No observations found for this cluster.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="content-grid" style="margin-top: 1rem;">
+  <div class="panel">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">Links</p>
+        <h2>Relationship records</h2>
+      </div>
+    </div>
+    <table>
+      <thead><tr><th>Type</th><th>Left</th><th>Right</th><th>Score</th><th>Created</th></tr></thead>
+      <tbody>
+        {% for link in links %}
+        <tr>
+          <td>{{ link.relation_type }}</td>
+          <td>{{ link.left_cluster_key }}</td>
+          <td>{{ link.right_cluster_key }}</td>
+          <td>{{ link.score }}</td>
+          <td>{{ link.created_at }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" class="muted">No relationship records yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="panel">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">Adjacent clusters</p>
+        <h2>Related observables</h2>
+      </div>
+    </div>
+    <table>
+      <thead><tr><th>Type</th><th>Value</th><th>Sources</th><th>Obs.</th><th>Score</th></tr></thead>
+      <tbody>
+        {% for row in related_clusters %}
+        <tr>
+          <td>{{ row.cluster_type }}</td>
+          <td>{{ row.cluster_value }}</td>
+          <td>{{ row.source_count }}</td>
+          <td>{{ row.observation_count }}</td>
+          <td>{{ row.score }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" class="muted">No related clusters yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

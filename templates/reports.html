@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="topbar hero-topbar">
+  <div class="hero-copy">
+    <p class="eyebrow">Reports</p>
+    <h1>CTI report drafts</h1>
+    <p class="lede">Generate weekly, monthly, quarterly, and annual reports using the Zeltser-aligned outline, then turn the results into reusable analyst artifacts.</p>
+  </div>
+</header>
+
+<section class="content-grid">
+  <div class="panel">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">Draft generation</p>
+        <h2>Create a report</h2>
+      </div>
+      {% if user.role == 'admin' %}
+      <span class="badge admin">admin</span>
+      {% endif %}
+    </div>
+    {% if user.role == 'admin' %}
+    <div class="button-row">
+      <a class="primary" href="/reports/new">Build draft</a>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <h3>Analyst access</h3>
+      <p>Ask an admin to generate a report draft or export the outline for your workflow.</p>
+    </div>
+    {% endif %}
+
+    <div class="section-title" style="margin-top: 1rem;">
+      <div>
+        <p class="eyebrow">Template</p>
+        <h2>Zeltser outline</h2>
+      </div>
+    </div>
+    <ol>
+      {% for section in report_outline %}
+      <li>{{ section }}</li>
+      {% endfor %}
+    </ol>
+  </div>
+
+  <div class="panel">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">Drafts</p>
+        <h2>Generated reports</h2>
+      </div>
+    </div>
+    <table>
+      <thead><tr><th>Title</th><th>Cadence</th><th>Status</th><th>Created</th></tr></thead>
+      <tbody>
+        {% for report in report_runs %}
+        <tr>
+          <td><a href="/reports/{{ report.id }}">{{ report.title }}</a></td>
+          <td>{{ report.cadence }}</td>
+          <td>{{ report.status }}</td>
+          <td>{{ report.created_at }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4" class="muted">No report drafts yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="section-title" style="margin-top: 1rem;">
+      <div>
+        <p class="eyebrow">Forecast seeds</p>
+        <h2>Report-adjacent technology cards</h2>
+      </div>
+    </div>
+    <div class="forecast-list">
+      {% for f in forecasts[:6] %}
+      <article class="forecast-card">
+        <div class="forecast-header">
+          <h3><a href="/forecast/brief/{{ f.id }}">{{ f.title }}</a></h3>
+          <span class="pill dim">{{ f.confidence }}%</span>
+        </div>
+        <p class="muted">{{ f.technology_class }}</p>
+        <p><strong>Related tech:</strong> {{ f.related_technology }}</p>
+        <p><strong>Attack surface:</strong> {{ f.attack_surface }}</p>
+      </article>
+      {% else %}
+      <div class="empty-state">
+        <h3>No cards yet</h3>
+        <p>The Forecast page holds the richer imported briefs.</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

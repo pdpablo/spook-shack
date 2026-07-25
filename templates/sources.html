@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="topbar hero-topbar">
+  <div class="hero-copy">
+    <p class="eyebrow">Sources</p>
+    <h1>Approved source registry</h1>
+    <p class="lede">Manage feeds and APIs, set schedules and crawl delays, and keep policy notes attached to each source. Source discovery now lives on its own page.</p>
+    <div class="tag-row">
+      <span>AUP-aware</span>
+      <span>Rate-limited</span>
+      <span>Encrypted credentials</span>
+    </div>
+  </div>
+</header>
+
+<section class="content-grid">
+  <div class="panel">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">Registry</p>
+        <h2>Configured sources</h2>
+      </div>
+      {% if user.role == 'admin' %}
+      <span class="badge admin">admin</span>
+      {% endif %}
+    </div>
+
+    {% if user.role == 'admin' %}
+    <div class="button-row" style="margin-bottom: 1rem;">
+      <a class="ghost" href="/sources/new">Add source</a>
+    </div>
+    {% endif %}
+
+    <div class="source-list">
+      {% for source in sources %}
+      <article class="source-card">
+        <div class="source-main">
+          <div>
+            <h3><a href="/sources/{{ source.id }}">{{ source.name }}</a></h3>
+            <p>{{ source.source_type }} · {{ source.access_method }}</p>
+            <p class="muted">{{ source.policy_notes }}</p>
+            {% if source.url %}<p class="muted"><a href="{{ source.url }}" target="_blank" rel="noreferrer">{{ source.url }}</a></p>{% endif %}
+            {% if source.feed_url %}<p class="muted">Feed: <a href="{{ source.feed_url }}" target="_blank" rel="noreferrer">{{ source.feed_url }}</a></p>{% endif %}
+          </div>
+          <span class="source-count">{{ source.rate_limit_per_minute }}/min</span>
+        </div>
+        <div class="source-meta">
+          <span class="pill {% if source.enabled %}good{% else %}dim{% endif %}">{{ 'enabled' if source.enabled else 'disabled' }}</span>
+          <span class="pill dim">{{ source.schedule }}</span>
+          <span class="pill dim">delay {{ source.crawl_delay_seconds }}s</span>
+          <a class="ghost-link" href="/sources/{{ source.id }}">Open detail</a>
+        </div>
+      </article>
+      {% else %}
+      <div class="empty-state">
+        <h3>No sources yet</h3>
+        <p>Use the registry to add your first feeds and APIs.</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">Activity</p>
+        <h2>Latest note activity</h2>
+      </div>
+    </div>
+    <table>
+      <thead>
+        <tr><th>Verdict</th><th>Item</th><th>Source</th><th>By</th><th>Created</th></tr>
+      </thead>
+      <tbody>
+        {% for note, item, source, username in recent_notes %}
+        <tr>
+          <td>{{ note.verdict }}</td>
+          <td>{{ item.title }}</td>
+          <td>{{ source.name }}</td>
+          <td>{{ username }}</td>
+          <td>{{ note.created_at }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" class="muted">No notes yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

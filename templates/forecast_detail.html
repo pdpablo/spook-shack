@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="topbar hero-topbar">
+  <div class="hero-copy">
+    <p class="eyebrow">Forecast brief</p>
+    <h1>{{ brief.title }}</h1>
+    <p class="lede">A dedicated view for one imported future-tech brief, with attack vectors, actor use, and source notes split away from the main forecast page.</p>
+    <div class="tag-row">
+      <span>{{ brief.classification }}</span>
+      <span>{{ brief.confidence }}%</span>
+      <span>{{ brief.related_technology }}</span>
+    </div>
+  </div>
+</header>
+
+<section class="metrics-grid">
+  <article class="metric-card"><span>Existing tech</span><strong>{{ brief.existing_technology }}</strong><small>Comparable stack</small></article>
+  <article class="metric-card"><span>Vectors</span><strong>{{ brief.attack_vectors|length }}</strong><small>Potential entry points</small></article>
+  <article class="metric-card"><span>Threat uses</span><strong>{{ brief.threat_actor_use|length }}</strong><small>How it could be abused</small></article>
+  <article class="metric-card"><span>Sources</span><strong>{{ brief.source_notes|length }}</strong><small>Reference notes</small></article>
+</section>
+
+<section class="content-grid">
+  <div class="panel">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">Summary</p>
+        <h2>Analyst narrative</h2>
+      </div>
+    </div>
+    <div class="empty-state">
+      <h3>{{ brief.title }}</h3>
+      <p>{{ brief.summary }}</p>
+      <p class="muted"><strong>Created at:</strong> {{ brief.created_at }}</p>
+      <p class="muted"><strong>Updated at:</strong> {{ brief.updated_at }}</p>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">Vectors</p>
+        <h2>Predicted attack paths</h2>
+      </div>
+    </div>
+    <ol>
+      {% for vector in brief.attack_vectors %}
+      <li>{{ vector }}</li>
+      {% endfor %}
+    </ol>
+
+    <div class="section-title" style="margin-top: 1rem;">
+      <div>
+        <p class="eyebrow">Actor use</p>
+        <h2>How threat actors may use it</h2>
+      </div>
+    </div>
+    <ul>
+      {% for use in brief.threat_actor_use %}
+      <li>{{ use }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+
+<section class="panel" style="margin-top: 1rem;">
+  <div class="section-title">
+    <div>
+      <p class="eyebrow">Evidence</p>
+      <h2>Source notes and raw report JSON</h2>
+    </div>
+  </div>
+  <p class="muted">Source notes: {{ brief.source_notes | join(', ') }}</p>
+  <pre class="excerpt">{{ brief.raw_report_json }}</pre>
+</section>
+{% endblock %}

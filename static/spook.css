@@ -48,6 +48,54 @@ body::before {
   padding: 1.25rem 0 2.5rem;
 }
 
+.app-nav {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+}
+
+.brand-link {
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 800;
+  letter-spacing: .02em;
+}
+
+.nav-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: .55rem .85rem;
+  border-radius: 999px;
+  text-decoration: none;
+  color: var(--muted);
+  border: 1px solid transparent;
+  background: rgba(255,255,255,.04);
+}
+
+.nav-link.active {
+  color: var(--text);
+  border-color: rgba(57,208,255,.35);
+  background: rgba(57,208,255,.12);
+}
+
+.nav-logout { margin: 0; }
+.nav-logout button { padding: .55rem .9rem; }
+
 .topbar, .login-grid, .content-grid {
   display: grid;
   gap: 1rem;

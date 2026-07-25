@@ -9,6 +9,26 @@
   <body>
     <div class="backdrop"></div>
     <main class="shell">
+      {% if nav_links %}
+      <nav class="app-nav panel">
+        <div class="nav-brand">
+          <a href="/" class="brand-link">Spook Shack</a>
+          {% if user %}
+          <span class="pill dim">{{ user.role }}</span>
+          {% endif %}
+        </div>
+        <div class="nav-links">
+          {% for link in nav_links %}
+          <a class="nav-link {% if active_page == link.label|lower %}active{% endif %}" href="{{ link.href }}">{{ link.label }}</a>
+          {% endfor %}
+        </div>
+        {% if user %}
+        <form method="post" action="/logout" class="nav-logout">
+          <button type="submit" class="ghost">Logout</button>
+        </form>
+        {% endif %}
+      </nav>
+      {% endif %}
       {% block content %}{% endblock %}
     </main>
   </body>

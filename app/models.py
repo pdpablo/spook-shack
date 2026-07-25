@@ -27,8 +27,10 @@ class Source(Base):
     name: Mapped[str] = mapped_column(String(128), unique=True, index=True, nullable=False)
     source_type: Mapped[str] = mapped_column(String(64), default="feed", nullable=False)
     url: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    feed_url: Mapped[str | None] = mapped_column(String(512), nullable=True)
     access_method: Mapped[str] = mapped_column(String(64), default="api", nullable=False)
     rate_limit_per_minute: Mapped[int] = mapped_column(Integer, default=60, nullable=False)
+    crawl_delay_seconds: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     schedule: Mapped[str] = mapped_column(String(64), default="*/30 * * * *", nullable=False)
     policy_notes: Mapped[str] = mapped_column(Text, default="Comply with source AUP and rate limits.", nullable=False)
     encrypted_credentials: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -37,6 +39,25 @@ class Source(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     items = relationship("IntelligenceItem", back_populates="source")
+
+
+class IngestionRun(Base):
+    __tablename__ = "ingestion_runs"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    source_id: Mapped[int] = mapped_column(ForeignKey("sources.id"), nullable=False)
+    status: Mapped[str] = mapped_column(String(32), default="queued", nullable=False)
+    mode: Mapped[str] = mapped_column(String(32), default="manual", nullable=False)
+    reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    records_seen: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    records_normalized: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    requested_by: Mapped[str] = mapped_column(String(64), default="admin", nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    source = relationship("Source")
 
 
 class IntelligenceItem(Base):
@@ -81,3 +102,36 @@ class ForecastItem(Base):
     threat_use: Mapped[str] = mapped_column(Text, nullable=False)
     confidence: Mapped[int] = mapped_column(Integer, default=50, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class ReportRun(Base):
+    __tablename__ = "report_runs"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    cadence: Mapped[str] = mapped_column(String(32), nullable=False)
+    start_at: Mapped[str] = mapped_column(String(32), nullable=False)
+    end_at: Mapped[str] = mapped_column(String(32), nullable=False)
+    title: Mapped[str] = mapped_column(String(256), nullable=False)
+    markdown: Mapped[str] = mapped_column(Text, nullable=False)
+    status: Mapped[str] = mapped_column(String(32), nullable=False)
+    created_by: Mapped[str] = mapped_column(String(64), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+
+class FutureTechBrief(Base):
+    __tablename__ = "future_briefs"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    title: Mapped[str] = mapped_column(String(256), nullable=False)
+    classification: Mapped[str] = mapped_column(String(128), nullable=False)
+    related_technology: Mapped[str] = mapped_column(String(256), nullable=False)
+    existing_technology: Mapped[str] = mapped_column(String(256), nullable=False, default="")
+    attack_vectors_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
+    threat_actor_use_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
+    source_notes_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
+    summary: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    raw_report_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
+    confidence: Mapped[int] = mapped_column(Integer, default=50, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)

@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="topbar hero-topbar">
+  <div class="hero-copy">
+    <p class="eyebrow">Add source</p>
+    <h1>New approved source</h1>
+    <p class="lede">Keep source onboarding on a dedicated page so the registry itself stays readable and the AUP/rate-limit details remain easy to audit.</p>
+    <div class="tag-row">
+      <span>Admin only</span>
+      <span>Policy-aware</span>
+      <span>Rate-limited</span>
+    </div>
+  </div>
+</header>
+
+<section class="content-grid">
+  <div class="panel">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">Create</p>
+        <h2>Source onboarding form</h2>
+      </div>
+    </div>
+    <form method="post" action="/sources" class="form-stack source-form">
+      <div class="dual">
+        <label>
+          <span>Name</span>
+          <input name="name" type="text" placeholder="ransomware.live" required />
+        </label>
+        <label>
+          <span>Source type</span>
+          <input name="source_type" type="text" placeholder="feed" value="feed" required />
+        </label>
+      </div>
+      <div class="dual">
+        <label>
+          <span>Website URL</span>
+          <input name="url" type="url" placeholder="https://example.com" />
+        </label>
+        <label>
+          <span>Feed URL</span>
+          <input name="feed_url" type="url" placeholder="https://example.com/rss.xml" />
+        </label>
+      </div>
+      <div class="dual">
+        <label>
+          <span>Access method</span>
+          <input name="access_method" type="text" placeholder="api" value="api" required />
+        </label>
+        <label>
+          <span>Rate limit per minute</span>
+          <input name="rate_limit_per_minute" type="number" min="1" value="60" required />
+        </label>
+      </div>
+      <div class="dual">
+        <label>
+          <span>Crawl delay seconds</span>
+          <input name="crawl_delay_seconds" type="number" min="0" value="0" />
+        </label>
+        <label>
+          <span>Cron schedule</span>
+          <input name="schedule" type="text" placeholder="*/30 * * * *" value="*/30 * * * *" required />
+        </label>
+      </div>
+      <label>
+        <span>Policy notes</span>
+        <textarea name="policy_notes" rows="3" placeholder="Describe acceptable use policy and rate-limit guidance..." required></textarea>
+      </label>
+      <label style="display:flex; align-items:center; gap:.5rem;">
+        <input type="checkbox" name="enabled" checked style="width:auto; margin:0;" />
+        <span>Enabled</span>
+      </label>
+      <div class="button-row">
+        <button type="submit" class="ghost">Add source</button>
+        <a class="ghost" href="/sources">Back to registry</a>
+      </div>
+    </form>
+  </div>
+
+  <div class="panel">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">Checklist</p>
+        <h2>Onboarding guardrails</h2>
+      </div>
+    </div>
+    <div class="empty-state">
+      <h3>Before you add a source</h3>
+      <p>Confirm the source allows collection, define a crawl delay, and add policy notes so every admin can audit the collection rules later.</p>
+      <ul class="bullet-list">
+        <li>Prefer RSS, public APIs, or explicit allowlisted feeds.</li>
+        <li>Set conservative schedule and rate limits.</li>
+        <li>Document any manual review required before ingesting.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+{% endblock %}

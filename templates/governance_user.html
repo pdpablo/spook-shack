@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="topbar hero-topbar">
+  <div class="hero-copy">
+    <p class="eyebrow">Governance user</p>
+    <h1>{{ target.username }}</h1>
+    <p class="lede">Dedicated access-control view for one account. Role changes are kept separate from the main governance index.</p>
+    <div class="tag-row">
+      <span>{{ target.role }}</span>
+      <span>User ID {{ target.id }}</span>
+      <span>{{ target.created_at }}</span>
+    </div>
+  </div>
+</header>
+
+<section class="metrics-grid">
+  <article class="metric-card"><span>Role</span><strong>{{ target.role }}</strong><small>Current access level</small></article>
+  <article class="metric-card"><span>Created</span><strong>{{ target.created_at }}</strong><small>Account age</small></article>
+  <article class="metric-card"><span>Sources</span><strong>{{ sources|length }}</strong><small>Registry entries visible</small></article>
+  <article class="metric-card"><span>Briefs</span><strong>{{ summary.future_brief_count }}</strong><small>Imported forecasts</small></article>
+</section>
+
+<section class="content-grid">
+  <div class="panel">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">Update role</p>
+        <h2>Permission assignment</h2>
+      </div>
+    </div>
+    {% if user.role == 'admin' %}
+    <form method="post" action="/governance/users/{{ target.id }}/role" class="form-stack">
+      <label>
+        <span>Role</span>
+        <select name="role">
+          <option value="analyst" {% if target.role == 'analyst' %}selected{% endif %}>analyst</option>
+          <option value="admin" {% if target.role == 'admin' %}selected{% endif %}>admin</option>
+        </select>
+      </label>
+      <button type="submit" class="primary">Save role</button>
+    </form>
+    {% else %}
+    <div class="empty-state">
+      <h3>Read-only</h3>
+      <p>Only admins can update account roles.</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="panel">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">Account context</p>
+        <h2>Access-control notes</h2>
+      </div>
+    </div>
+    <div class="empty-state">
+      <h3>Governance detail</h3>
+      <p>This page can be extended with per-user audit history, source assignments, and credential handling notes without crowding the governance overview.</p>
+      <p class="muted">Current role: {{ target.role }}</p>
+    </div>
+  </div>
+</section>
+{% endblock %}

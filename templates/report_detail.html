@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="topbar hero-topbar">
+  <div class="hero-copy">
+    <p class="eyebrow">Report detail</p>
+    <h1>{{ report.title }}</h1>
+    <p class="lede">A dedicated view for one generated report, with its metadata, time window, and template outline.</p>
+    <div class="tag-row">
+      <span>{{ report.cadence }}</span>
+      <span>{{ report.status }}</span>
+      <span>{{ report.start_at }} → {{ report.end_at }}</span>
+    </div>
+  </div>
+</header>
+
+<section class="content-grid">
+  <div class="panel">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">Summary</p>
+        <h2>Metadata</h2>
+      </div>
+    </div>
+    <div class="empty-state">
+      <h3>{{ report.title }}</h3>
+      <p><strong>Created by:</strong> {{ report.created_by }}</p>
+      <p><strong>Created at:</strong> {{ report.created_at }}</p>
+      <p><strong>Updated at:</strong> {{ report.updated_at }}</p>
+      <p><strong>Status:</strong> {{ report.status }}</p>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">Outline</p>
+        <h2>Zeltser-aligned sections</h2>
+      </div>
+    </div>
+    <ol>
+      {% for section in outline %}
+      <li>{{ section }}</li>
+      {% endfor %}
+    </ol>
+  </div>
+</section>
+
+<section class="panel" style="margin-top: 1rem;">
+  <div class="section-title">
+    <div>
+      <p class="eyebrow">Markdown</p>
+      <h2>Generated content</h2>
+    </div>
+  </div>
+  <pre class="excerpt">{{ report.markdown }}</pre>
+</section>
+{% endblock %}

@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="topbar hero-topbar">
+  <div class="hero-copy">
+    <p class="eyebrow">Item detail</p>
+    <h1>{{ item.title }}</h1>
+    <p class="lede">A dedicated screen for one intelligence item, with its source context, analyst notes, and related records split away from the overview boards.</p>
+    <div class="tag-row">
+      <span>{{ source_name }}</span>
+      <span>{{ item.observable_type }}: {{ item.observable_value }}</span>
+      <span>{{ item.verdict }}</span>
+    </div>
+  </div>
+</header>
+
+<section class="metrics-grid">
+  <article class="metric-card"><span>Confidence</span><strong>{{ item.confidence }}%</strong><small>Normalized score</small></article>
+  <article class="metric-card"><span>Created</span><strong>{{ item.created_at }}</strong><small>First observed</small></article>
+  <article class="metric-card"><span>Notes</span><strong>{{ notes|length }}</strong><small>Analyst annotations</small></article>
+  <article class="metric-card"><span>Related</span><strong>{{ related_items|length }}</strong><small>Same-source items</small></article>
+</section>
+
+<section class="content-grid">
+  <div class="panel">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">Summary</p>
+        <h2>Observable record</h2>
+      </div>
+    </div>
+    <div class="empty-state">
+      <h3>{{ item.title }}</h3>
+      <p>{{ item.summary }}</p>
+      {% if item.raw_excerpt %}<pre class="excerpt">{{ item.raw_excerpt }}</pre>{% endif %}
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">Source</p>
+        <h2>Registry context</h2>
+      </div>
+    </div>
+    <div class="empty-state">
+      <h3>{{ source_name }}</h3>
+      <p><strong>Type:</strong> {{ item.observable_type }}</p>
+      <p><strong>Value:</strong> {{ item.observable_value }}</p>
+      <p><strong>Verdict:</strong> {{ item.verdict }}</p>
+      <p><strong>Confidence:</strong> {{ item.confidence }}%</p>
+    </div>
+  </div>
+</section>
+
+<section class="content-grid" style="margin-top: 1rem;">
+  <div class="panel">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">Notes</p>
+        <h2>Analyst commentary</h2>
+      </div>
+    </div>
+    <table>
+      <thead><tr><th>Analyst</th><th>Note</th><th>Created</th></tr></thead>
+      <tbody>
+        {% for note, username in notes %}
+        <tr>
+          <td>{{ username }}</td>
+          <td>{{ note.note }}</td>
+          <td>{{ note.created_at }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="3" class="muted">No notes yet for this item.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="panel">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">Related</p>
+        <h2>More from this source</h2>
+      </div>
+    </div>
+    <div class="item-list">
+      {% for related, related_source_name in related_items %}
+      <article class="item-card verdict-{{ related.verdict }}">
+        <div class="item-header">
+          <div>
+            <h3><a href="/items/{{ related.id }}">{{ related.title }}</a></h3>
+            <p class="muted">{{ related_source_name }} · {{ related.observable_type }}: {{ related.observable_value }}</p>
+          </div>
+          <span class="pill {% if related.verdict == 'true_positive' %}good{% elif related.verdict == 'false_positive' %}bad{% else %}dim{% endif %}">{{ related.verdict }}</span>
+        </div>
+        <p>{{ related.summary }}</p>
+      </article>
+      {% else %}
+      <div class="empty-state">
+        <h3>No related items yet</h3>
+        <p>Use the Source or Correlation pages to navigate to similar records.</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

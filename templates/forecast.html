@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="topbar hero-topbar">
+  <div class="hero-copy">
+    <p class="eyebrow">Forecast</p>
+    <h1>Future attack-vector board</h1>
+    <p class="lede">Import a Hermes-agent report about a new technology, classify it, relate it to existing technology, and store the predicted attack vectors for reuse.</p>
+  </div>
+</header>
+
+<section class="content-grid">
+  <div class="panel">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">Import</p>
+        <h2>Hermes-agent report intake</h2>
+      </div>
+      {% if user.role == 'admin' %}
+      <span class="badge admin">admin</span>
+      {% endif %}
+    </div>
+
+    {% if user.role == 'admin' %}
+    <div class="button-row">
+      <a class="primary" href="/forecast/new">Import brief</a>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <h3>Analyst access</h3>
+      <p>Only admins can import Hermes-agent forecast briefs. Analysts can still review the existing cards below.</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="panel">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">Seed cards</p>
+        <h2>Forecast examples</h2>
+      </div>
+    </div>
+    <div class="forecast-list">
+      {% for f in forecast_cards %}
+      <article class="forecast-card">
+        <div class="forecast-header">
+          <h3><a href="/forecast/brief/{{ f.id }}">{{ f.title }}</a></h3>
+          <span class="pill dim">{{ f.confidence }}%</span>
+        </div>
+        <p class="muted">{{ f.technology_class }} · {{ f.related_technology }}</p>
+        <p><strong>Attack surface:</strong> {{ f.attack_surface }}</p>
+        <p><strong>Possible use:</strong> {{ f.threat_use }}</p>
+      </article>
+      {% endfor %}
+    </div>
+
+    <div class="section-title" style="margin-top: 1rem;">
+      <div>
+        <p class="eyebrow">Imported briefs</p>
+        <h2>Hermes-agent forecasts</h2>
+      </div>
+    </div>
+    <div class="source-list">
+      {% for brief in future_briefs %}
+      <article class="source-card">
+        <div class="source-main">
+          <div>
+            <h3><a href="/forecast/brief/{{ brief.id }}">{{ brief.title }}</a></h3>
+            <p>{{ brief.classification }} · confidence {{ brief.confidence }}%</p>
+            <p class="muted">Related technology: {{ brief.related_technology }}</p>
+            <p class="muted">Existing technology: {{ brief.existing_technology }}</p>
+          </div>
+          <span class="pill accent">brief</span>
+        </div>
+        <p>{{ brief.summary }}</p>
+        <p class="muted">Attack vectors: {{ brief.attack_vectors | join(', ') }}</p>
+        <p class="muted">Threat use: {{ brief.threat_actor_use | join(', ') }}</p>
+      </article>
+      {% else %}
+      <div class="empty-state">
+        <h3>No imported briefs yet</h3>
+        <p>Use the form above or post JSON to the /forecast/import endpoint.</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

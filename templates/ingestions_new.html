@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="topbar hero-topbar">
+  <div class="hero-copy">
+    <p class="eyebrow">Queue ingest</p>
+    <h1>Manual run workspace</h1>
+    <p class="lede">Move the queue form onto its own page so the Ingestions screen stays focused on run history while admins get a dedicated queueing view.</p>
+    <div class="tag-row">
+      <span>Admin only</span>
+      <span>Manual run</span>
+      <span>Separate screen</span>
+    </div>
+  </div>
+</header>
+
+<section class="content-grid">
+  <div class="panel">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">Queue</p>
+        <h2>Schedule a manual ingest run</h2>
+      </div>
+    </div>
+
+    <form method="post" action="/ingestions/queue" class="form-stack">
+      <label>
+        <span>Source</span>
+        <select name="source_id" required>
+          {% for source in sources %}
+          <option value="{{ source.id }}">{{ source.name }} — {{ source.schedule }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>
+        <span>Reason</span>
+        <textarea name="reason" rows="3" placeholder="Why is this run being queued?"></textarea>
+      </label>
+      <button type="submit" class="primary">Queue ingest</button>
+    </form>
+  </div>
+
+  <div class="panel">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">Guardrails</p>
+        <h2>Queueing rules</h2>
+      </div>
+    </div>
+    <div class="empty-state">
+      <h3>Keep the queue disciplined</h3>
+      <p>Only queue approved sources, respect their policy notes, and use the run history page to watch status instead of mixing run creation with review.</p>
+      <ul class="bullet-list">
+        <li>Check the source registry before queueing.</li>
+        <li>Prefer manual runs only when the schedule needs intervention.</li>
+        <li>Keep reasons short and operationally useful.</li>
+      </ul>
+    </div>
+    <div class="button-row" style="margin-top: 1rem;">
+      <a class="ghost" href="/ingestions">Back to history</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -14,10 +15,17 @@ class SourceCreate(BaseModel):
     name: str
     source_type: str = "feed"
     url: str | None = None
+    feed_url: str | None = None
     access_method: str = "api"
     rate_limit_per_minute: int = Field(default=60, ge=1)
+    crawl_delay_seconds: int = Field(default=0, ge=0)
     schedule: str = "*/30 * * * *"
     policy_notes: str = "Comply with source AUP and rate limits."
+    enabled: bool = True
+
+
+class SourceDiscoveryRequest(BaseModel):
+    url: str = Field(min_length=5, max_length=2048)
 
 
 class ItemCreate(BaseModel):
@@ -36,6 +44,23 @@ class NoteCreate(BaseModel):
 
 class VerdictUpdate(BaseModel):
     verdict: str = Field(pattern="^(true_positive|false_positive|unknown)$")
+
+
+class UserRoleUpdate(BaseModel):
+    role: str = Field(pattern="^(admin|analyst)$")
+
+
+class ForecastImportRequest(BaseModel):
+    title: str = Field(min_length=2, max_length=256)
+    classification: str = Field(min_length=2, max_length=128)
+    related_technology: str = Field(min_length=2, max_length=256)
+    existing_technology: str = Field(min_length=2, max_length=256)
+    attack_vectors: list[str] = Field(default_factory=list)
+    threat_actor_use: list[str] = Field(default_factory=list)
+    source_notes: list[str] = Field(default_factory=list)
+    summary: str = Field(default="", max_length=8000)
+    confidence: int = Field(default=50, ge=0, le=100)
+    raw_report: dict[str, Any] | None = None
 
 
 class DashboardSource(BaseModel):

@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="topbar hero-topbar">
+  <div class="hero-copy">
+    <p class="eyebrow">Spook Shack // CTI Lab</p>
+    <h1>Universal Intelligence Dashboard</h1>
+    <p class="lede">
+      A split-screen threat intelligence workspace with dedicated pages for sources,
+      correlation, reporting, forecasting, and governance.
+    </p>
+    <div class="tag-row">
+      <span>RBAC</span>
+      <span>Encrypted secrets</span>
+      <span>Scheduled ingestion</span>
+      <span>Hermes report import</span>
+    </div>
+  </div>
+  <div class="topbar-actions">
+    <a class="ghost" href="/demo">Simulate ingest</a>
+    <form method="post" action="/logout">
+      <button type="submit" class="ghost">Logout</button>
+    </form>
+  </div>
+</header>
+
+<section class="metrics-grid">
+  <article class="metric-card">
+    <span>Sources</span>
+    <strong>{{ summary.source_count }}</strong>
+    <small>{{ source_stats|length }} configured</small>
+  </article>
+  <article class="metric-card">
+    <span>Items</span>
+    <strong>{{ summary.item_count }}</strong>
+    <small>Normalized into reusable observables</small>
+  </article>
+  <article class="metric-card">
+    <span>True positives</span>
+    <strong>{{ summary.true_positive_count }}</strong>
+    <small>Confirmed signals in the corpus</small>
+  </article>
+  <article class="metric-card">
+    <span>Future briefs</span>
+    <strong>{{ summary.future_brief_count }}</strong>
+    <small>Imported Hermes-agent forecasts</small>
+  </article>
+</section>
+
+<section class="content-grid">
+  <div class="panel">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">Workspaces</p>
+        <h2>Separate screens</h2>
+      </div>
+    </div>
+    <div class="source-list">
+      {% for link in nav_links %}
+      <article class="source-card">
+        <div class="source-main">
+          <div>
+            <h3><a href="{{ link.href }}">{{ link.label }}</a></h3>
+            <p class="muted">Open the dedicated dashboard page for {{ link.label|lower }}.</p>
+          </div>
+          <span class="pill accent">open</span>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">Workspace map</p>
+        <h2>Dedicated pages at a glance</h2>
+      </div>
+      {% if user.role == 'admin' %}
+      <span class="badge admin">admin</span>
+      {% endif %}
+    </div>
+    <div class="source-list">
+      {% for link in nav_links[1:] %}
+      <article class="source-card">
+        <div class="source-main">
+          <div>
+            <h3><a href="{{ link.href }}">{{ link.label }}</a></h3>
+            <p class="muted">Open the {{ link.label|lower }} workspace.</p>
+          </div>
+          <span class="pill accent">open</span>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+    <div class="button-row" style="margin-top: 1rem;">
+      <a class="ghost-link" href="/sources/new">Add source</a>
+      <a class="ghost-link" href="/ingestions/new">Queue ingest</a>
+      <a class="ghost-link" href="/reports/new">Build report</a>
+      <a class="ghost-link" href="/forecast/new">Import brief</a>
+    </div>
+  </div>
+</section>
+
+<section class="content-grid" style="margin-top: 1rem;">
+  <div class="panel">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">Recent items</p>
+        <h2>Most recent intelligence</h2>
+      </div>
+    </div>
+    <div class="item-list">
+      {% for item, source_name, note_rows in items[:5] %}
+      <article class="item-card verdict-{{ item.verdict }}">
+        <div class="item-header">
+          <div>
+            <h3><a href="/items/{{ item.id }}">{{ item.title }}</a></h3>
+            <p class="muted">{{ source_name }} · {{ item.observable_type }}: {{ item.observable_value }}</p>
+          </div>
+          <span class="pill {% if item.verdict == 'true_positive' %}good{% elif item.verdict == 'false_positive' %}bad{% else %}dim{% endif %}">{{ item.verdict }}</span>
+        </div>
+        <p>{{ item.summary }}</p>
+      </article>
+      {% else %}
+      <div class="empty-state">
+        <h3>No intelligence ingested yet</h3>
+        <p>Use the Sources page or the worker CLI to collect data from allowed feeds and APIs.</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">Reporting</p>
+        <h2>Weekly to annual drafts</h2>
+      </div>
+    </div>
+    <div class="source-list">
+      {% for label in ['Weekly', 'Monthly', 'Quarterly', 'Annual'] %}
+      <article class="source-card">
+        <div class="source-main">
+          <div>
+            <h3>{{ label }} report</h3>
+            <p class="muted">Built from the Zeltser CTI report outline.</p>
+          </div>
+          <span class="pill accent">ready</span>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

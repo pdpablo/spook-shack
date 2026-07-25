@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="topbar hero-topbar">
+  <div class="hero-copy">
+    <p class="eyebrow">Discover</p>
+    <h1>Find open RSS/Atom sources</h1>
+    <p class="lede">Use this page to crawl a site that you are allowed to inspect and discover public feeds or syndication endpoints for onboarding into the registry.</p>
+    <div class="tag-row">
+      <span>Public feeds only</span>
+      <span>Respect AUP</span>
+      <span>Separate page</span>
+    </div>
+  </div>
+</header>
+
+<section class="content-grid">
+  <div class="panel">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">Crawler-safe discovery</p>
+        <h2>Search for feeds</h2>
+      </div>
+    </div>
+    <form method="post" action="/discover" class="form-stack">
+      <label>
+        <span>Website or documentation URL</span>
+        <input type="url" name="url" placeholder="https://example.com" required />
+      </label>
+      <button type="submit" class="primary">Discover feeds</button>
+    </form>
+    <div class="empty-state" style="margin-top: 1rem;">
+      <h3>Discovery guidance</h3>
+      <p>Only use websites where the operator's acceptable-use policy allows automated discovery. Keep requests conservative and avoid scraping beyond obvious feed markers.</p>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">Results</p>
+        <h2>Candidate feeds</h2>
+      </div>
+    </div>
+    {% if discovery %}
+    <div class="empty-state">
+      <h3>{{ discovery.title }}</h3>
+      <p class="muted">Discovered from {{ discovery.query_url }}</p>
+      {% if discovery.candidates %}
+      <ul>
+        {% for candidate in discovery.candidates %}
+        <li><a href="{{ candidate.candidate_url }}" target="_blank" rel="noreferrer">{{ candidate.candidate_url }}</a> <span class="muted">({{ candidate.candidate_type }})</span></li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p>No public feed endpoints were found on that page.</p>
+      {% endif %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <h3>No discovery run yet</h3>
+      <p>Run the form on the left to populate candidate feed links, then copy allowed entries into the Sources registry.</p>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

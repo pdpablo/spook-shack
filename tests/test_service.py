@@ -55,16 +55,71 @@ def test_dashboard_routes_render(isolated_home):
             )
             assert login.status_code == 200
             response = await client.get("/")
+            demo_response = await client.get("/demo")
             sources_response = await client.get("/api/sources")
-            return response, sources_response
+            sources_new_response = await client.get("/sources/new")
+            discover_response = await client.get("/discover")
+            source_detail_response = await client.get("/sources/1")
+            source_ingest_response = await client.get("/sources/1/ingest")
+            ingestions_response = await client.get("/ingestions")
+            ingestions_new_response = await client.get("/ingestions/new")
+            notes_response = await client.get("/notes")
+            reports_response = await client.get("/reports")
+            reports_new_response = await client.get("/reports/new")
+            report_detail_response = await client.get("/reports/report-1")
+            forecast_response = await client.get("/forecast")
+            forecast_new_response = await client.get("/forecast/new")
+            forecast_detail_response = await client.get("/forecast/brief/1")
+            governance_response = await client.get("/governance")
+            governance_user_response = await client.get("/governance/users/1")
+            correlation_response = await client.get("/correlation")
+            correlation_detail_response = await client.get("/correlation/cluster?cluster_type=domain&cluster_value=example.com")
+            item_detail_response = await client.get("/items/1")
+            return response, demo_response, sources_response, sources_new_response, discover_response, source_detail_response, source_ingest_response, ingestions_response, ingestions_new_response, notes_response, reports_response, reports_new_response, report_detail_response, forecast_response, forecast_new_response, forecast_detail_response, governance_response, governance_user_response, correlation_response, correlation_detail_response, item_detail_response
 
-    response, sources_response = asyncio.run(run())
+    response, demo_response, sources_response, sources_new_response, discover_response, source_detail_response, source_ingest_response, ingestions_response, ingestions_new_response, notes_response, reports_response, reports_new_response, report_detail_response, forecast_response, forecast_new_response, forecast_detail_response, governance_response, governance_user_response, correlation_response, correlation_detail_response, item_detail_response = asyncio.run(run())
 
     assert response.status_code == 200
     assert "Universal Intelligence Dashboard" in response.text
+    assert demo_response.status_code == 200
+    assert "Simulation workspace" in demo_response.text
     assert "Sources" in response.text
     assert sources_response.status_code == 200
     assert "ransomware.live" in sources_response.text
+    assert sources_new_response.status_code == 200
+    assert "New approved source" in sources_new_response.text
+    assert discover_response.status_code == 200
+    assert "Find open RSS/Atom sources" in discover_response.text
+    assert source_detail_response.status_code == 200
+    assert "Source detail" in source_detail_response.text
+    assert source_ingest_response.status_code == 200
+    assert "Queue a manual ingest" in source_ingest_response.text
+    assert ingestions_response.status_code == 200
+    assert "Scheduled and manual run history" in ingestions_response.text
+    assert ingestions_new_response.status_code == 200
+    assert "Manual run workspace" in ingestions_new_response.text
+    assert notes_response.status_code == 200
+    assert "Analyst notes" in notes_response.text
+    assert reports_response.status_code == 200
+    assert "CTI report drafts" in reports_response.text
+    assert reports_new_response.status_code == 200
+    assert "Report draft workspace" in reports_new_response.text
+    assert report_detail_response.status_code in {200, 404}
+    assert forecast_response.status_code == 200
+    assert "Future attack-vector board" in forecast_response.text
+    assert forecast_new_response.status_code == 200
+    assert "Forecast brief workspace" in forecast_new_response.text
+    assert forecast_detail_response.status_code == 200
+    assert "Forecast brief" in forecast_detail_response.text
+    assert governance_response.status_code == 200
+    assert "Access control and secret hygiene" in governance_response.text
+    assert governance_user_response.status_code == 200
+    assert "Governance user" in governance_user_response.text
+    assert correlation_response.status_code == 200
+    assert "Reusable observables and cross-source links" in correlation_response.text
+    assert correlation_detail_response.status_code in {200, 404}
+    assert item_detail_response.status_code == 200
+    assert "Item detail" in item_detail_response.text
 
 
 def test_dashboard_search_filters_and_sort(isolated_home):

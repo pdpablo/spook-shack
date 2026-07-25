@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="topbar hero-topbar">
+  <div class="hero-copy">
+    <p class="eyebrow">Correlation</p>
+    <h1>Reusable observables and cross-source links</h1>
+    <p class="lede">Review normalized intelligence, cluster shared observables, and mark true-positive or false-positive cases without stuffing every screen into the overview.</p>
+  </div>
+</header>
+
+<section class="metrics-grid">
+  <article class="metric-card"><span>Clusters</span><strong>{{ correlation.clusters_total }}</strong><small>All normalized observable groups</small></article>
+  <article class="metric-card"><span>Shared clusters</span><strong>{{ correlation.shared_clusters }}</strong><small>Seen in more than one source</small></article>
+  <article class="metric-card"><span>Links</span><strong>{{ correlation.links_total }}</strong><small>Cross-record relationships</small></article>
+  <article class="metric-card"><span>Sources</span><strong>{{ summary.source_count }}</strong><small>Feed / API coverage</small></article>
+</section>
+
+<section class="content-grid">
+  <div class="panel">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">Normalized items</p>
+        <h2>Current intelligence</h2>
+      </div>
+    </div>
+    <div class="item-list">
+      {% for item, source_name in items[:12] %}
+      <article class="item-card verdict-{{ item.verdict }}">
+        <div class="item-header">
+          <div>
+            <h3><a href="/items/{{ item.id }}">{{ item.title }}</a></h3>
+            <p class="muted">{{ source_name }} · {{ item.observable_type }}: {{ item.observable_value }}</p>
+          </div>
+          <span class="pill {% if item.verdict == 'true_positive' %}good{% elif item.verdict == 'false_positive' %}bad{% else %}dim{% endif %}">{{ item.verdict }}</span>
+        </div>
+        <div class="confidence-track"><span style="width: {{ item.confidence }}%"></span></div>
+        <p>{{ item.summary }}</p>
+        {% if item.raw_excerpt %}<pre class="excerpt">{{ item.raw_excerpt }}</pre>{% endif %}
+        <div class="button-row" style="margin-top: .75rem;">
+          <a class="ghost-link" href="/items/{{ item.id }}">Open item detail</a>
+        </div>
+      </article>
+      {% else %}
+      <div class="empty-state">
+        <h3>No intelligence ingested yet</h3>
+        <p>Collect a source run from the Sources page or start the worker CLI.</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">Shared observables</p>
+        <h2>Top cluster types</h2>
+      </div>
+    </div>
+    <table>
+      <thead><tr><th>Type</th><th>Sources</th><th>Total</th></tr></thead>
+      <tbody>
+        {% for source, count in source_stats %}
+        <tr>
+          <td>{{ source.name }}</td>
+          <td>{{ source.source_type }}</td>
+          <td>{{ count }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="section-title" style="margin-top: 1rem;">
+      <div>
+        <p class="eyebrow">Cluster summary</p>
+        <h2>Correlated observables</h2>
+      </div>
+    </div>
+    <table>
+      <thead><tr><th>Type</th><th>Value</th><th>Sources</th><th>Observations</th><th>Score</th></tr></thead>
+      <tbody>
+        {% for cluster in correlation.top_clusters %}
+        <tr>
+          <td><a href="/correlation/cluster?cluster_type={{ cluster.cluster_type }}&cluster_value={{ cluster.cluster_value | urlencode }}">{{ cluster.cluster_type }}</a></td>
+          <td>{{ cluster.cluster_value }}</td>
+          <td>{{ cluster.source_count }}</td>
+          <td>{{ cluster.observation_count }}</td>
+          <td>{{ cluster.score }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" class="muted">No clusters yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="panel" style="margin-top: 1rem;">
+  <div class="section-title">
+    <div>
+      <p class="eyebrow">Analyst notes</p>
+      <h2>Recent verdict history</h2>
+    </div>
+  </div>
+  <table>
+    <thead><tr><th>Item</th><th>Analyst</th><th>Verdict</th><th>Note</th><th>Created</th></tr></thead>
+    <tbody>
+      {% for note, username, title in notes[:12] %}
+      <tr>
+        <td>{{ title }}</td>
+        <td>{{ username }}</td>
+        <td>{{ note.verdict }}</td>
+        <td>{{ note.note }}</td>
+        <td>{{ note.created_at }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" class="muted">No analyst notes yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}

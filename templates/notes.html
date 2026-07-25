@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="topbar hero-topbar">
+  <div class="hero-copy">
+    <p class="eyebrow">Notes</p>
+    <h1>Analyst notes and verdicts</h1>
+    <p class="lede">Keep analyst judgments separate from correlation and reporting so the workflow stays reviewable and reusable.</p>
+  </div>
+</header>
+
+<section class="metrics-grid">
+  <article class="metric-card"><span>Notes</span><strong>{{ notes|length }}</strong><small>Analyst annotations</small></article>
+  <article class="metric-card"><span>Recent items</span><strong>{{ recent_items|length }}</strong><small>Latest intelligence entries</small></article>
+  <article class="metric-card"><span>Pages</span><strong>8+</strong><small>Dedicated screens in the workspace</small></article>
+  <article class="metric-card"><span>Workflow</span><strong>Separated</strong><small>Source, ingest, note, report, forecast</small></article>
+</section>
+
+<section class="content-grid">
+  <div class="panel">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">Latest notes</p>
+        <h2>Verdict history</h2>
+      </div>
+    </div>
+    <table>
+      <thead><tr><th>Verdict</th><th>Item</th><th>Source</th><th>Analyst</th><th>Created</th></tr></thead>
+      <tbody>
+        {% for note, title, source_name, username in notes %}
+        <tr>
+          <td>{{ note.verdict }}</td>
+          <td>{{ title }}</td>
+          <td>{{ source_name }}</td>
+          <td>{{ username }}</td>
+          <td>{{ note.created_at }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" class="muted">No notes yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="panel">
+    <div class="section-title">
+      <div>
+        <p class="eyebrow">Recent items</p>
+        <h2>Review targets</h2>
+      </div>
+    </div>
+    <div class="item-list">
+      {% for item, source_name in recent_items %}
+      <article class="item-card verdict-{{ item.verdict }}">
+        <div class="item-header">
+          <div>
+            <h3><a href="/items/{{ item.id }}">{{ item.title }}</a></h3>
+            <p class="muted">{{ source_name }} · {{ item.observable_type }}: {{ item.observable_value }}</p>
+          </div>
+          <span class="pill {% if item.verdict == 'true_positive' %}good{% elif item.verdict == 'false_positive' %}bad{% else %}dim{% endif %}">{{ item.verdict }}</span>
+        </div>
+        <p>{{ item.summary }}</p>
+      </article>
+      {% else %}
+      <div class="empty-state">
+        <h3>No items yet</h3>
+        <p>Run an ingest from the Sources or Ingestions page to populate the queue for analyst review.</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}
