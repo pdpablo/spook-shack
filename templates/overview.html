@@ -3,8 +3,8 @@
 <header class="topbar hero-topbar">
   <div class="hero-copy">
     <p class="eyebrow">Spook Shack // SOC view</p>
-    <h1>Threat intelligence command center</h1>
-    <p class="lede">
+    <h1 class="balance-text">Threat intelligence command center</h1>
+    <p class="lede wrap-pretty">
       A SIEM-style workspace for source ingestion, correlation, reporting, forecasting,
       and governance — tuned for the Spook Shack theme.
     </p>
@@ -16,10 +16,10 @@
     </div>
   </div>
   <div class="topbar-actions">
-    <a class="ghost-link" href="/sources/new">Add source</a>
-    <a class="ghost-link" href="/ingestions/new">Queue ingest</a>
+    <a class="ghost-link action-chip" href="/sources/new">Add source</a>
+    <a class="ghost-link action-chip" href="/ingestions/new">Queue ingest</a>
     <form method="post" action="/logout">
-      <button type="submit" class="ghost">Logout</button>
+      <button type="submit" class="ghost action-chip">Logout</button>
     </form>
   </div>
 </header>
@@ -73,31 +73,55 @@
   <div class="panel">
     <div class="section-title">
       <div>
-        <p class="eyebrow">Workspace map</p>
-        <h2>Dedicated pages at a glance</h2>
+        <p class="eyebrow">Queue health</p>
+        <h2>Ingestion operations</h2>
       </div>
-      {% if user.role == 'admin' %}
-      <span class="badge admin">admin</span>
-      {% endif %}
+      <span class="pill accent">live</span>
     </div>
-    <div class="source-list">
-      {% for link in nav_links[1:] %}
+    <div class="metrics-grid compact-metrics">
+      <article class="metric-card">
+        <span>Queued</span>
+        <strong>{{ queue_counts.get('queued', 0) }}</strong>
+        <small>Waiting for the worker</small>
+      </article>
+      <article class="metric-card">
+        <span>Running</span>
+        <strong>{{ queue_counts.get('running', 0) }}</strong>
+        <small>Actively collecting</small>
+      </article>
+      <article class="metric-card">
+        <span>Failed</span>
+        <strong>{{ queue_counts.get('failed', 0) }}</strong>
+        <small>Needs review</small>
+      </article>
+      <article class="metric-card">
+        <span>Avg confidence</span>
+        <strong>{{ visible_average_confidence }}</strong>
+        <small>Visible item slice</small>
+      </article>
+    </div>
+    <div class="source-list" style="margin-top: 1rem;">
+      {% for run, source_name in recent_ingestions %}
       <article class="source-card">
         <div class="source-main">
           <div>
-            <h3><a href="{{ link.href }}">{{ link.label }}</a></h3>
-            <p class="muted">Open the {{ link.label|lower }} workspace.</p>
+            <h3><a href="/sources/{{ run.source_id }}">{{ source_name }}</a></h3>
+            <p class="muted">
+              {{ run.status }} · {{ run.mode }} · requested by {{ run.requested_by }}
+            </p>
           </div>
-          <span class="pill accent">open</span>
+          <div class="source-meta">
+            <span class="pill {% if run.status == 'failed' %}bad{% elif run.status == 'queued' %}dim{% else %}good{% endif %}">{{ run.status }}</span>
+            <span class="source-count">{{ run.records_normalized }} normalized</span>
+          </div>
         </div>
       </article>
+      {% else %}
+      <div class="empty-state">
+        <h3>No ingestion runs yet</h3>
+        <p>Queue a source from the Ingestions page to populate the run timeline.</p>
+      </div>
       {% endfor %}
-    </div>
-    <div class="button-row" style="margin-top: 1rem;">
-      <a class="ghost-link" href="/sources/new">Add source</a>
-      <a class="ghost-link" href="/ingestions/new">Queue ingest</a>
-      <a class="ghost-link" href="/reports/new">Build report</a>
-      <a class="ghost-link" href="/forecast/new">Import brief</a>
     </div>
   </div>
 </section>

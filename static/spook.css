@@ -154,6 +154,8 @@ body::before {
 .panel, .hero-card, .login-panel { border-radius: 22px; padding: 1.25rem; }
 .metric-card, .source-card, .item-card, .forecast-card { border-radius: 18px; padding: 1rem; }
 .hero-card h1, .topbar h1 { font-size: clamp(2rem, 4vw, 4.1rem); line-height: .95; margin: .25rem 0 .75rem; letter-spacing: -.04em; }
+.balance-text { text-wrap: balance; }
+.wrap-pretty { text-wrap: pretty; }
 .login-panel h2, .panel h2 { margin: 0 0 1rem; }
 .eyebrow { text-transform: uppercase; letter-spacing: .18em; color: var(--cyan); font-size: .72rem; margin: 0; }
 .lede { color: var(--muted); font-size: 1.02rem; line-height: 1.6; max-width: 65ch; }
@@ -175,6 +177,12 @@ button, .pill, .ghost-link {
   font-weight: 700;
 }
 button { cursor: pointer; }
+.ghost-link, button.ghost, button.primary {
+  transition: transform .15s ease, background-color .15s ease, border-color .15s ease, color .15s ease, box-shadow .15s ease;
+}
+.ghost-link:active, button.ghost:active, button.primary:active {
+  transform: scale(0.96);
+}
 a.ghost-link {
   display: inline-flex;
   align-items: center;
@@ -193,6 +201,7 @@ button.ghost { background: rgba(255,255,255,.05); color: var(--text); border: 1p
 .pill.accent { background: rgba(57,208,255,.16); color: var(--cyan); }
 .badge.admin { background: rgba(255,187,85,.14); color: var(--amber); padding: .45rem .75rem; border-radius: 999px; font-size: .72rem; }
 .metrics-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 1rem; margin-bottom: 1rem; }
+.compact-metrics { grid-template-columns: repeat(4, minmax(0, 1fr)); margin-bottom: 0; }
 .metric-card span { color: var(--muted); display: block; }
 .metric-card strong { font-size: 2rem; }
 .metric-card small { color: var(--muted); display: block; margin-top: .35rem; }
@@ -243,6 +252,7 @@ button.ghost { background: rgba(255,255,255,.05); color: var(--text); border: 1p
   font-weight: 700;
 }
 .source-meta { display: grid; gap: .4rem; justify-items: end; text-align: right; }
+.action-chip { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
 .forecast-header { display: flex; justify-content: space-between; gap: .75rem; align-items: center; }
 .empty-state {
   padding: 1rem;

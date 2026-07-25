@@ -295,6 +295,18 @@ def dashboard(
     items = db.execute(item_stmt.limit(20)).all()
     forecasts = db.execute(select(ForecastItem).order_by(ForecastItem.created_at.desc())).scalars().all()
     summary = dashboard_summary_data(db)
+    recent_ingestions = db.execute(
+        select(IngestionRun, Source.name)
+        .join(Source, Source.id == IngestionRun.source_id)
+        .order_by(IngestionRun.created_at.desc())
+        .limit(5)
+    ).all()
+    queue_counts = dict(
+        db.execute(
+            select(IngestionRun.status, func.count(IngestionRun.id))
+            .group_by(IngestionRun.status)
+        ).all()
+    )
 
     rendered_items = []
     visible_confidence_total = 0
@@ -330,6 +342,8 @@ def dashboard(
             items=rendered_items,
             forecasts=forecasts,
             summary=summary,
+            queue_counts=queue_counts,
+            recent_ingestions=recent_ingestions,
             total_item_count=total_items,
             filtered_item_count=filtered_item_count,
             visible_item_count=visible_item_count,
