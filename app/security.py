@@ -37,7 +37,7 @@ def new_token() -> str:
 
 
 @dataclass(frozen=True)
-class DemoCredentials:
+class DefaultCredentials:
     admin_username: str = "admin"
     admin_password: str = "spookshack-admin"
     analyst_username: str = "analyst"

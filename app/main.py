@@ -21,13 +21,13 @@ from .models import AnalystNote, ForecastItem, FutureTechBrief, IntelligenceItem
 from .schemas import ForecastImportRequest, ItemCreate, LoginRequest, NoteCreate, SourceCreate, SourceDiscoveryRequest, UserRoleUpdate, VerdictUpdate
 from spook_shack.service import create_report_draft, get_report_outline, get_report_run, list_report_runs
 from spook_shack.intel import correlation_summary, ingest_source
-from .security import DemoCredentials, hash_password, new_token, verify_password
+from .security import DefaultCredentials, hash_password, new_token, verify_password
 
 BASE_DIR = Path(os.getenv("SPOOK_SHACK_APP_ROOT", Path.cwd())).resolve()
 TEMPLATES = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 STATIC_DIR = BASE_DIR / "static"
 APP_SECRET_KEY = os.getenv("APP_SECRET_KEY", "dev-only-change-me")
-DEMO = DemoCredentials()
+DEFAULT_ACCOUNTS = DefaultCredentials()
 
 app = FastAPI(title="Spook Shack", version="0.1.0")
 app.add_middleware(SessionMiddleware, secret_key=APP_SECRET_KEY, session_cookie="spookshack_session")
@@ -76,11 +76,11 @@ def migrate_schema(db) -> None:
         db.execute(text("ALTER TABLE ingestion_runs ADD COLUMN requested_by VARCHAR(64) NOT NULL DEFAULT 'admin'"))
 
 
-def seed_demo_data(db):
+def seed_default_data(db):
     migrate_schema(db)
     if not db.execute(select(User).limit(1)).scalar_one_or_none():
-        db.add(User(username=DEMO.admin_username, password_hash=hash_password(DEMO.admin_password), role="admin"))
-        db.add(User(username=DEMO.analyst_username, password_hash=hash_password(DEMO.analyst_password), role="analyst"))
+        db.add(User(username=DEFAULT_ACCOUNTS.admin_username, password_hash=hash_password(DEFAULT_ACCOUNTS.admin_password), role="admin"))
+        db.add(User(username=DEFAULT_ACCOUNTS.analyst_username, password_hash=hash_password(DEFAULT_ACCOUNTS.analyst_password), role="analyst"))
         db.commit()
 
     if not db.execute(select(Source).limit(1)).scalar_one_or_none():
@@ -136,7 +136,7 @@ def seed_demo_data(db):
                     "Annotate Hermes-agent reports with the nearest existing stack.",
                 ]),
                 summary="Prototype forecast to demonstrate the future-tech dashboard and the Hermes-agent report import flow.",
-                raw_report_json=json.dumps({"source": "seed", "style": "demo"}),
+                raw_report_json=json.dumps({"source": "seed", "style": "seed"}),
                 confidence=72,
             )
         )
@@ -150,7 +150,7 @@ def seed_demo_data(db):
 def startup() -> None:
     Base.metadata.create_all(bind=engine)
     with SessionLocal() as db:
-        seed_demo_data(db)
+        seed_default_data(db)
 
 
 def seed_items(db) -> None:
@@ -211,8 +211,8 @@ def login_page(request: Request):
         request,
         "login.html",
         {
-            "demo_admin": DEMO.admin_username,
-            "demo_analyst": DEMO.analyst_username,
+            "admin_username": DEFAULT_ACCOUNTS.admin_username,
+            "analyst_username": DEFAULT_ACCOUNTS.analyst_username,
         },
     )
 
@@ -226,8 +226,8 @@ def login(request: Request, username: str = Form(...), password: str = Form(...)
             "login.html",
             {
                 "error": "Invalid username or password.",
-                "demo_admin": DEMO.admin_username,
-                "demo_analyst": DEMO.analyst_username,
+                "admin_username": DEFAULT_ACCOUNTS.admin_username,
+                "analyst_username": DEFAULT_ACCOUNTS.analyst_username,
             },
             status_code=401,
         )
@@ -555,55 +555,12 @@ def item_detail_page(request: Request, item_id: int, db=Depends(get_db)):
     )
 
 
-@app.get("/demo", response_class=HTMLResponse)
-def demo_page(request: Request, db=Depends(get_db)):
-    user = current_user(request, db)
-    if not user:
-        return RedirectResponse(url="/login", status_code=status.HTTP_303_SEE_OTHER)
-    return TEMPLATES.TemplateResponse(
-        request,
-        "demo.html",
-        _page_context(
-            request,
-            title="Demo Ingest · Spook Shack",
-            active_page="overview",
-            user=user,
-        ),
-    )
-
-
-@app.post("/demo/ingest")
-def demo_ingest(request: Request, db=Depends(get_db)):
-    user = require_user(request, db)
-    if user.role not in {"admin", "analyst"}:
-        raise HTTPException(status_code=403, detail="Not allowed")
-    source = db.execute(select(Source).where(Source.name == "TweetFeed")).scalar_one_or_none()
-    if not source:
-        raise HTTPException(status_code=404, detail="Seed source missing")
-    now = datetime.now(timezone.utc)
-    item = IntelligenceItem(
-        source_id=source.id,
-        title=f"Live ingest snapshot {now:%Y-%m-%d %H:%M}",
-        summary="Simulated source update for Raspberry Pi testing and dashboard growth.",
-        observable_type="keyword",
-        observable_value="simulated cluster",
-        confidence=55,
-        verdict="unknown",
-        raw_excerpt="Simulated source update for Raspberry Pi testing and dashboard growth.",
-    )
-    source.last_sync_at = now
-    db.add(item)
-    db.add(source)
-    db.commit()
-    return {"ok": True, "item_id": item.id}
-
-
 @app.post("/api/bootstrap")
 def api_bootstrap(request: Request, db=Depends(get_db)):
     user = current_user(request, db)
     if not user:
         raise HTTPException(status_code=401, detail="Not authenticated")
-    seed_demo_data(db)
+    seed_default_data(db)
     return {"ok": True}
 
 

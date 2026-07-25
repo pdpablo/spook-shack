@@ -8,14 +8,17 @@
   </head>
   <body>
     <div class="backdrop"></div>
-    <main class="shell">
+    <div class="app-shell">
       {% if nav_links %}
-      <nav class="app-nav panel">
+      <aside class="app-nav panel">
         <div class="nav-brand">
           <a href="/" class="brand-link">Spook Shack</a>
-          {% if user %}
-          <span class="pill dim">{{ user.role }}</span>
-          {% endif %}
+          <div class="nav-meta">
+            {% if user %}
+            <span class="pill dim">{{ user.role }}</span>
+            {% endif %}
+            <span class="nav-caption">Dark SIEM console</span>
+          </div>
         </div>
         <div class="nav-links">
           {% for link in nav_links %}
@@ -23,13 +26,18 @@
           {% endfor %}
         </div>
         {% if user %}
-        <form method="post" action="/logout" class="nav-logout">
-          <button type="submit" class="ghost">Logout</button>
-        </form>
+        <div class="nav-footer">
+          <span class="nav-caption">{{ user.username }}</span>
+          <form method="post" action="/logout" class="nav-logout">
+            <button type="submit" class="ghost">Logout</button>
+          </form>
+        </div>
         {% endif %}
-      </nav>
+      </aside>
       {% endif %}
-      {% block content %}{% endblock %}
-    </main>
+      <main class="workspace">
+        {% block content %}{% endblock %}
+      </main>
+    </div>
   </body>
 </html>

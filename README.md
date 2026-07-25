@@ -71,4 +71,4 @@ TG_LIMIT=100
 
 ## Next step
 
-Run the starter from `QUICKSTART.md`, then replace the demo connector with real source adapters one by one.
+Run the starter from `QUICKSTART.md`, then connect the approved sources and scheduled ingest workers one by one.

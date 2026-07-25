@@ -13,7 +13,7 @@ uvicorn app.main:app --reload
 Open:
 - http://127.0.0.1:8000/login
 
-Demo users:
+Default users:
 - admin / spookshack-admin
 - analyst / spookshack-analyst
 

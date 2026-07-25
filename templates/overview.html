@@ -2,21 +2,22 @@
 {% block content %}
 <header class="topbar hero-topbar">
   <div class="hero-copy">
-    <p class="eyebrow">Spook Shack // CTI Lab</p>
-    <h1>Universal Intelligence Dashboard</h1>
+    <p class="eyebrow">Spook Shack // SOC view</p>
+    <h1>Threat intelligence command center</h1>
     <p class="lede">
-      A split-screen threat intelligence workspace with dedicated pages for sources,
-      correlation, reporting, forecasting, and governance.
+      A SIEM-style workspace for source ingestion, correlation, reporting, forecasting,
+      and governance — tuned for the Spook Shack theme.
     </p>
     <div class="tag-row">
       <span>RBAC</span>
       <span>Encrypted secrets</span>
       <span>Scheduled ingestion</span>
-      <span>Hermes report import</span>
+      <span>Threat hunting</span>
     </div>
   </div>
   <div class="topbar-actions">
-    <a class="ghost" href="/demo">Simulate ingest</a>
+    <a class="ghost-link" href="/sources/new">Add source</a>
+    <a class="ghost-link" href="/ingestions/new">Queue ingest</a>
     <form method="post" action="/logout">
       <button type="submit" class="ghost">Logout</button>
     </form>

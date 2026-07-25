@@ -40,11 +40,11 @@ def _request(app: FastAPI, method: str, path: str, **kwargs) -> httpx.Response:
 
 def test_dashboard_routes_render(isolated_home):
     from app.db import Base, SessionLocal, engine
-    from app.main import app as full_app, seed_demo_data
+    from app.main import app as full_app, seed_default_data
 
     Base.metadata.create_all(bind=engine)
     with SessionLocal() as db:
-        seed_demo_data(db)
+        seed_default_data(db)
 
     async def run():
         transport = httpx.ASGITransport(app=full_app)
@@ -55,7 +55,6 @@ def test_dashboard_routes_render(isolated_home):
             )
             assert login.status_code == 200
             response = await client.get("/")
-            demo_response = await client.get("/demo")
             sources_response = await client.get("/api/sources")
             sources_new_response = await client.get("/sources/new")
             discover_response = await client.get("/discover")
@@ -75,14 +74,12 @@ def test_dashboard_routes_render(isolated_home):
             correlation_response = await client.get("/correlation")
             correlation_detail_response = await client.get("/correlation/cluster?cluster_type=domain&cluster_value=example.com")
             item_detail_response = await client.get("/items/1")
-            return response, demo_response, sources_response, sources_new_response, discover_response, source_detail_response, source_ingest_response, ingestions_response, ingestions_new_response, notes_response, reports_response, reports_new_response, report_detail_response, forecast_response, forecast_new_response, forecast_detail_response, governance_response, governance_user_response, correlation_response, correlation_detail_response, item_detail_response
+            return response, sources_response, sources_new_response, discover_response, source_detail_response, source_ingest_response, ingestions_response, ingestions_new_response, notes_response, reports_response, reports_new_response, report_detail_response, forecast_response, forecast_new_response, forecast_detail_response, governance_response, governance_user_response, correlation_response, correlation_detail_response, item_detail_response
 
-    response, demo_response, sources_response, sources_new_response, discover_response, source_detail_response, source_ingest_response, ingestions_response, ingestions_new_response, notes_response, reports_response, reports_new_response, report_detail_response, forecast_response, forecast_new_response, forecast_detail_response, governance_response, governance_user_response, correlation_response, correlation_detail_response, item_detail_response = asyncio.run(run())
+    response, sources_response, sources_new_response, discover_response, source_detail_response, source_ingest_response, ingestions_response, ingestions_new_response, notes_response, reports_response, reports_new_response, report_detail_response, forecast_response, forecast_new_response, forecast_detail_response, governance_response, governance_user_response, correlation_response, correlation_detail_response, item_detail_response = asyncio.run(run())
 
     assert response.status_code == 200
-    assert "Universal Intelligence Dashboard" in response.text
-    assert demo_response.status_code == 200
-    assert "Simulation workspace" in demo_response.text
+    assert "Threat intelligence command center" in response.text
     assert "Sources" in response.text
     assert sources_response.status_code == 200
     assert "ransomware.live" in sources_response.text
@@ -124,11 +121,11 @@ def test_dashboard_routes_render(isolated_home):
 
 def test_dashboard_search_filters_and_sort(isolated_home):
     from app.db import Base, SessionLocal, engine
-    from app.main import app as full_app, seed_demo_data
+    from app.main import app as full_app, seed_default_data
 
     Base.metadata.create_all(bind=engine)
     with SessionLocal() as db:
-        seed_demo_data(db)
+        seed_default_data(db)
 
     async def run():
         transport = httpx.ASGITransport(app=full_app)

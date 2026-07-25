@@ -331,15 +331,35 @@ def collect_ransomware_live(client: httpx.Client, source: Mapping[str, Any], cre
 
 
 def collect_phishhunt(client: httpx.Client, source: Mapping[str, Any]) -> list[CollectedRecord]:
-    response = client.get("https://phishunt.io/api/v1/domains", params={"limit": 200, "format": "json"})
-    response.raise_for_status()
-    payload = _response_json(response)
-    items = payload.get("results", []) if isinstance(payload, Mapping) else payload
     records: list[CollectedRecord] = []
-    for item in items or []:
-        if not isinstance(item, Mapping):
-            continue
-        records.append(_records_from_feed_item(item, source["source_key"], source["source_type"]))
+    limit = 1000
+    offset = 0
+    total: int | None = None
+    while True:
+        response = client.get(
+            "https://phishunt.io/api/v1/domains",
+            params={"limit": limit, "offset": offset, "format": "json"},
+        )
+        response.raise_for_status()
+        payload = _response_json(response)
+        items = payload.get("results", []) if isinstance(payload, Mapping) else payload
+        if isinstance(payload, Mapping):
+            raw_total = payload.get("count")
+            if isinstance(raw_total, int):
+                total = raw_total
+        if not items:
+            break
+        batch_count = 0
+        for item in items:
+            if not isinstance(item, Mapping):
+                continue
+            batch_count += 1
+            records.append(_records_from_feed_item(item, source["source_key"], source["source_type"]))
+        offset += batch_count
+        if batch_count < limit:
+            break
+        if total is not None and offset >= total:
+            break
     return records
 
 
