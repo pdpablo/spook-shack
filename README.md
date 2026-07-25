@@ -60,6 +60,7 @@ TG_LIMIT=100
 ```
 
 5. Deploy. The container will persist its SQLite state in the `spook-shack-data` volume.
+6. If Hostinger still says the app cannot be reached, make sure the container is exposed on port `8000` in the Docker Manager UI and use the Hostinger compose file with `ports: - 8000` instead of `8000:8000`.
 
 ## Next step
 
