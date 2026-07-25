@@ -1,0 +1,33 @@
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env.example
+    environment:
+      DATABASE_URL: postgresql+psycopg://spookshack:spookshack@postgres:5432/spookshack
+      APP_SECRET_KEY: dev-only-change-me
+      APP_MASTER_KEY: dev-master-key-change-me-32-bytes
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./data:/data
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: spookshack
+      POSTGRES_USER: spookshack
+      POSTGRES_PASSWORD: spookshack
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U spookshack -d spookshack"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+volumes:
+  postgres-data:
