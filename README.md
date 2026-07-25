@@ -23,15 +23,43 @@ Spook Shack is a self-hostable threat intelligence application that ingests publ
 
 ## Stack
 
-- Backend: FastAPI + SQLAlchemy
-- DB: PostgreSQL in Docker, SQLite fallback for local testing
-- Frontend: server-rendered HTML/CSS starter UI
-- Deployment: Docker Compose
+- Backend: FastAPI + SQLite-backed service layer
+- Frontend: server-rendered HTML/CSS dashboard
+- Deployment: Docker Compose or a GHCR image
 
 ## Demo login
 
 - admin / spookshack-admin
 - analyst / spookshack-analyst
+
+## Deployment paths
+
+### Local Docker
+
+```bash
+docker compose up --build
+```
+
+### GitHub -> GHCR -> Hostinger Docker Manager
+
+1. Push changes to `main` on GitHub.
+2. GitHub Actions builds and publishes `ghcr.io/pdpablo/spook-shack:latest`.
+3. In Hostinger Docker Manager, use `docker-compose.hostinger.yml` as the compose file.
+4. Paste these environment variables into hPanel:
+
+```env
+SPOOK_SHACK_HOME=/data
+SPOOK_SHACK_FERNET_KEY=
+RANSOMWARELIVE_API_TOKEN=
+HIBP_API_KEY=
+TG_API_ID=
+TG_API_HASH=
+TG_CHANNEL=
+TG_SESSION_NAME=spook-shack
+TG_LIMIT=100
+```
+
+5. Deploy. The container will persist its SQLite state in the `spook-shack-data` volume.
 
 ## Next step
 

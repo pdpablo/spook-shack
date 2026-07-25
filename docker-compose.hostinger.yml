@@ -1,6 +1,5 @@
 services:
   web:
-    build: .
     image: ghcr.io/pdpablo/spook-shack:latest
     restart: unless-stopped
     ports:
