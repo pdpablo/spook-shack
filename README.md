@@ -45,12 +45,14 @@ docker compose up --build
 1. Push changes to `main` on GitHub.
 2. The workflow in `.github/workflows/publish-ghcr.yml` builds and publishes `ghcr.io/pdpablo/spook-shack:latest`.
 3. For releases, tag the repo with something like `v1.0.0`; `.github/workflows/release-ghcr.yml` publishes `ghcr.io/pdpablo/spook-shack:v1.0.0`.
-4. Make sure the GHCR package is public, or give Hostinger registry credentials if you want to keep it private.
-5. In Hostinger Docker Manager, use `docker-compose.hostinger.yml` as the compose file.
-6. Paste these environment variables into hPanel:
+4. Set `SPOOK_SHACK_IMAGE_TAG` in Hostinger to the tag you want to deploy. If `latest` looks stale, switch to a release tag like `v1.0.0`.
+5. Make sure the GHCR package is public, or give Hostinger registry credentials if you want to keep it private.
+6. In Hostinger Docker Manager, use `docker-compose.hostinger.yml` as the compose file.
+7. Paste these environment variables into hPanel:
 
 ```env
 SPOOK_SHACK_HOME=/data
+SPOOK_SHACK_IMAGE_TAG=latest
 SPOOK_SHACK_FERNET_KEY=
 RANSOMWARELIVE_API_TOKEN=
 HIBP_API_KEY=
