@@ -23,7 +23,7 @@ def _connect():
 
 def cmd_serve(args: argparse.Namespace) -> int:
     uvicorn.run(
-        "spook_shack.app:app",
+        "app.main:app",
         host=args.host,
         port=args.port,
         reload=args.reload,

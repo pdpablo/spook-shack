@@ -39,17 +39,32 @@ def _request(app: FastAPI, method: str, path: str, **kwargs) -> httpx.Response:
 
 
 def test_dashboard_routes_render(isolated_home):
-    from spook_shack.app import app as full_app
+    from app.db import Base, SessionLocal, engine
+    from app.main import app as full_app, seed_demo_data
 
-    response = _request(full_app, "GET", "/")
-    source_response = _request(full_app, "GET", "/sources/ransomware.live")
+    Base.metadata.create_all(bind=engine)
+    with SessionLocal() as db:
+        seed_demo_data(db)
+
+    async def run():
+        transport = httpx.ASGITransport(app=full_app)
+        async with httpx.AsyncClient(transport=transport, base_url="http://testserver", follow_redirects=True) as client:
+            login = await client.post(
+                "/login",
+                data={"username": "admin", "password": "spookshack-admin"},
+            )
+            assert login.status_code == 200
+            response = await client.get("/")
+            sources_response = await client.get("/api/sources")
+            return response, sources_response
+
+    response, sources_response = asyncio.run(run())
 
     assert response.status_code == 200
-    assert "Spook Shack" in response.text
-    assert "Source dashboards" in response.text
-    assert source_response.status_code == 200
-    assert "ransomware.live" in source_response.text
-    assert "Recent raw records" in source_response.text
+    assert "Universal Intelligence Dashboard" in response.text
+    assert "Sources" in response.text
+    assert sources_response.status_code == 200
+    assert "ransomware.live" in sources_response.text
 
 
 def test_seeds_default_sources_and_roadmap(isolated_home):

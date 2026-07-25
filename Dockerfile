@@ -10,6 +10,7 @@ WORKDIR /app
 RUN mkdir -p /data
 
 COPY pyproject.toml README.md ./
+COPY app ./app
 COPY spook_shack ./spook_shack
 COPY dashboard ./dashboard
 COPY dashboard/dist ./dashboard/dist

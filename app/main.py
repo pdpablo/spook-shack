@@ -143,9 +143,9 @@ def health() -> dict[str, str]:
 @app.get("/login", response_class=HTMLResponse)
 def login_page(request: Request):
     return TEMPLATES.TemplateResponse(
+        request,
         "login.html",
         {
-            "request": request,
             "demo_admin": DEMO.admin_username,
             "demo_analyst": DEMO.analyst_username,
         },
@@ -157,9 +157,9 @@ def login(request: Request, username: str = Form(...), password: str = Form(...)
     user = db.execute(select(User).where(User.username == username)).scalar_one_or_none()
     if not user or not verify_password(password, user.password_hash):
         return TEMPLATES.TemplateResponse(
+            request,
             "login.html",
             {
-                "request": request,
                 "error": "Invalid username or password.",
                 "demo_admin": DEMO.admin_username,
                 "demo_analyst": DEMO.analyst_username,
@@ -206,9 +206,9 @@ def dashboard(request: Request, db=Depends(get_db)):
         rendered_items.append((item, source_name, note_rows))
 
     return TEMPLATES.TemplateResponse(
+        request,
         "dashboard.html",
         {
-            "request": request,
             "user": user,
             "sources": sources,
             "items": rendered_items,
