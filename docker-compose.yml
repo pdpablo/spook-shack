@@ -1,7 +1,7 @@
 services:
   web:
     build: .
-    image: spook-shack-mvp:latest
+    image: ghcr.io/pdpablo/spook-shack:${SPOOK_SHACK_IMAGE_TAG:-latest}
     restart: unless-stopped
     ports:
       - "8000:8000"
