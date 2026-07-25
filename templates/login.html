@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="login-grid">
+  <div class="hero-card">
+    <p class="eyebrow">Spook Shack</p>
+    <h1>Threat intelligence that grows as days pass.</h1>
+    <p class="lede">
+      A dark, analyst-first CTI workspace for source ingestion, correlation, reporting,
+      and future-tech forecasting.
+    </p>
+
+    <div class="tag-row">
+      <span>RBAC</span>
+      <span>Docker-ready</span>
+      <span>Encrypted secrets</span>
+      <span>Weekly reports</span>
+    </div>
+
+    <div class="demo-box">
+      <p><strong>Demo accounts</strong></p>
+      <p>Admin: <code>{{ demo_admin }}</code> / <code>spookshack-admin</code></p>
+      <p>Analyst: <code>{{ demo_analyst }}</code> / <code>spookshack-analyst</code></p>
+    </div>
+  </div>
+
+  <div class="panel login-panel">
+    <h2>Access the Shack</h2>
+    {% if error %}
+      <div class="alert error">{{ error }}</div>
+    {% endif %}
+    <form method="post" action="/login" class="form-stack">
+      <label>
+        <span>Username</span>
+        <input name="username" type="text" placeholder="admin" required />
+      </label>
+      <label>
+        <span>Password</span>
+        <input name="password" type="password" placeholder="••••••••" required />
+      </label>
+      <button type="submit" class="primary">Enter</button>
+    </form>
+  </div>
+</section>
+{% endblock %}

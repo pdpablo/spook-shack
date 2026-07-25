@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="topbar">
+  <div>
+    <p class="eyebrow">Spook Shack // CTI Lab</p>
+    <h1>Universal Intelligence Dashboard</h1>
+    <p class="lede">Signed in as <strong>{{ user.username }}</strong> · role <strong>{{ user.role }}</strong></p>
+  </div>
+  <div class="topbar-actions">
+    <form method="post" action="/demo/ingest">
+      <button type="submit" class="ghost">Simulate ingest</button>
+    </form>
+    <form method="post" action="/logout">
+      <button type="submit" class="ghost">Logout</button>
+    </form>
+  </div>
+</header>
+
+<section class="metrics-grid">
+  <article class="metric-card"><span>Sources</span><strong>{{ summary.source_count }}</strong></article>
+  <article class="metric-card"><span>Items</span><strong>{{ summary.item_count }}</strong></article>
+  <article class="metric-card"><span>True positives</span><strong>{{ summary.true_positive_count }}</strong></article>
+  <article class="metric-card"><span>False positives</span><strong>{{ summary.false_positive_count }}</strong></article>
+</section>
+
+<section class="content-grid">
+  <div class="panel">
+    <div class="section-title">
+      <h2>Sources</h2>
+      {% if user.role == 'admin' %}
+      <span class="badge admin">admin</span>
+      {% endif %}
+    </div>
+
+    {% if user.role == 'admin' %}
+    <form method="post" action="/sources" class="form-stack source-form">
+      <div class="dual">
+        <label>
+          <span>Name</span>
+          <input name="name" type="text" placeholder="ransomware.live" required />
+        </label>
+        <label>
+          <span>Type</span>
+          <input name="source_type" type="text" placeholder="feed" value="feed" required />
+        </label>
+      </div>
+      <div class="dual">
+        <label>
+          <span>URL</span>
+          <input name="url" type="url" placeholder="https://example.com" />
+        </label>
+        <label>
+          <span>Access method</span>
+          <input name="access_method" type="text" placeholder="api" value="api" required />
+        </label>
+      </div>
+      <div class="dual">
+        <label>
+          <span>Rate limit/min</span>
+          <input name="rate_limit_per_minute" type="number" min="1" value="60" required />
+        </label>
+        <label>
+          <span>Schedule</span>
+          <input name="schedule" type="text" placeholder="*/30 * * * *" value="*/30 * * * *" required />
+        </label>
+      </div>
+      <label>
+        <span>Policy notes</span>
+        <textarea name="policy_notes" rows="3" placeholder="Describe access rules, AUP notes, and rate-limits..." required></textarea>
+      </label>
+      <button type="submit" class="ghost">Add source</button>
+    </form>
+    {% endif %}
+
+    <div class="source-list">
+      {% for source in sources %}
+      <article class="source-card">
+        <div>
+          <h3>{{ source.name }}</h3>
+          <p>{{ source.source_type }} · {{ source.access_method }}</p>
+          <p class="muted">Schedule: {{ source.schedule }}</p>
+          <p class="muted">Rate limit: {{ source.rate_limit_per_minute }}/min</p>
+        </div>
+        <div class="source-meta">
+          <span class="pill {% if source.enabled %}good{% else %}dim{% endif %}">{{ 'enabled' if source.enabled else 'disabled' }}</span>
+          {% if source.last_sync_at %}
+          <span class="muted">Last sync: {{ source.last_sync_at }}</span>
+          {% else %}
+          <span class="muted">No sync yet</span>
+          {% endif %}
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="section-title">
+      <h2>Recent intelligence</h2>
+      <span class="pill accent">correlated view</span>
+    </div>
+    <div class="item-list">
+      {% for item, source_name, note_rows in items %}
+      <article class="item-card">
+        <div class="item-header">
+          <div>
+            <h3>{{ item.title }}</h3>
+            <p class="muted">{{ source_name }} · {{ item.observable_type }}: {{ item.observable_value }}</p>
+          </div>
+          <div class="item-tags">
+            <span class="pill">confidence {{ item.confidence }}</span>
+            <span class="pill {% if item.verdict == 'true_positive' %}good{% elif item.verdict == 'false_positive' %}bad{% else %}dim{% endif %}">{{ item.verdict }}</span>
+          </div>
+        </div>
+        <p>{{ item.summary }}</p>
+        {% if item.raw_excerpt %}<pre class="excerpt">{{ item.raw_excerpt }}</pre>{% endif %}
+
+        <div class="note-block">
+          <form method="post" action="/items/{{ item.id }}/notes">
+            <label>
+              <span>Add analyst note</span>
+              <textarea name="note" rows="2" placeholder="Capture why this is important..." required></textarea>
+            </label>
+            <button type="submit" class="ghost">Save note</button>
+          </form>
+
+          {% if user.role == 'admin' %}
+          <form method="post" action="/items/{{ item.id }}/verdict" class="verdict-form">
+            <label>
+              <span>Verdict</span>
+              <select name="verdict">
+                <option value="unknown" {% if item.verdict == 'unknown' %}selected{% endif %}>unknown</option>
+                <option value="true_positive" {% if item.verdict == 'true_positive' %}selected{% endif %}>true_positive</option>
+                <option value="false_positive" {% if item.verdict == 'false_positive' %}selected{% endif %}>false_positive</option>
+              </select>
+            </label>
+            <button type="submit" class="ghost">Update verdict</button>
+          </form>
+          {% endif %}
+        </div>
+
+        {% if note_rows %}
+        <div class="notes">
+          {% for note, username in note_rows %}
+          <div class="note">
+            <strong>{{ username }}</strong>
+            <span>{{ note.note }}</span>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="section-title">
+      <h2>Future-tech forecast</h2>
+      <span class="pill accent">hermes report intake</span>
+    </div>
+    <div class="forecast-list">
+      {% for f in forecasts %}
+      <article class="forecast-card">
+        <h3>{{ f.title }}</h3>
+        <p class="muted">{{ f.technology_class }} · confidence {{ f.confidence }}</p>
+        <p><strong>Related tech:</strong> {{ f.related_technology }}</p>
+        <p><strong>Attack surface:</strong> {{ f.attack_surface }}</p>
+        <p><strong>Possible use:</strong> {{ f.threat_use }}</p>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}
