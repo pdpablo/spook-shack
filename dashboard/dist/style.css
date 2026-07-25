@@ -1,0 +1,29 @@
+.spook-shack-page { display: grid; gap: 1rem; }
+.spook-shack-hero { display: flex; justify-content: space-between; gap: 1rem; align-items: flex-start; flex-wrap: wrap; }
+.spook-shack-kicker { text-transform: uppercase; letter-spacing: .18em; font-size: .72rem; color: var(--color-muted-foreground); margin-bottom: .45rem; }
+.spook-shack-title { font-size: clamp(2rem, 4vw, 3.4rem); line-height: .95; letter-spacing: -0.05em; }
+.spook-shack-copy { max-width: 60rem; margin: .55rem 0 0; color: var(--color-muted-foreground); }
+.spook-shack-pillrow, .spook-shack-card-actions, .spook-shack-form-actions { display: flex; gap: .5rem; flex-wrap: wrap; }
+.spook-shack-hero-actions { display: grid; gap: .55rem; min-width: 18rem; }
+.spook-shack-role { display: grid; gap: .25rem; }
+.spook-shack-role span, .spook-shack-section-head p, .spook-shack-source-sub, .spook-shack-muted, .spook-shack-text, .spook-shack-metric-hint { color: var(--color-muted-foreground); }
+.spook-shack-section-head { display: flex; justify-content: space-between; gap: .75rem; align-items: baseline; margin-bottom: .55rem; }
+.spook-shack-roadmap, .spook-shack-metrics, .spook-shack-source-grid, .spook-shack-correlation, .spook-shack-activity { display: grid; gap: .75rem; }
+.spook-shack-roadmap { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.spook-shack-metrics { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+.spook-shack-source-grid { grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); }
+.spook-shack-correlation, .spook-shack-activity { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.spook-shack-source-head { display: flex; justify-content: space-between; gap: .75rem; align-items: flex-start; }
+.spook-shack-dl { display: grid; gap: .5rem; margin: 0; }
+.spook-shack-dl div { display: grid; grid-template-columns: 7rem minmax(0, 1fr); gap: .6rem; }
+.spook-shack-dl dt { font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: var(--color-muted-foreground); }
+.spook-shack-dl dd { margin: 0; }
+.spook-shack-row { display: flex; justify-content: space-between; gap: .75rem; align-items: center; padding: .35rem 0; border-bottom: 1px solid color-mix(in srgb, var(--color-border) 60%, transparent); }
+.spook-shack-row:last-child { border-bottom: 0; }
+.spook-shack-outline { margin: 0; padding-left: 1.2rem; display: grid; gap: .25rem; }
+.spook-shack-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: .75rem; margin-bottom: .8rem; }
+.spook-shack-form label { display: grid; gap: .35rem; font-size: .82rem; }
+.spook-shack-form label > span { color: var(--color-muted-foreground); font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; }
+.spook-shack-checkbox { display: inline-flex !important; align-items: center; gap: .5rem; margin-top: .55rem; }
+.spook-shack-error { border-color: color-mix(in srgb, #ef4444 60%, var(--color-border)); color: #fecaca; }
+@media (max-width: 800px) { .spook-shack-hero { flex-direction: column; } .spook-shack-section-head { flex-direction: column; align-items: flex-start; } }
