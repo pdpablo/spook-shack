@@ -17,7 +17,7 @@ from .models import AnalystNote, ForecastItem, IntelligenceItem, Source, User
 from .schemas import ItemCreate, LoginRequest, NoteCreate, SourceCreate, VerdictUpdate
 from .security import DemoCredentials, hash_password, new_token, verify_password
 
-BASE_DIR = Path(__file__).resolve().parents[1]
+BASE_DIR = Path(os.getenv("SPOOK_SHACK_APP_ROOT", Path.cwd())).resolve()
 TEMPLATES = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 STATIC_DIR = BASE_DIR / "static"
 APP_SECRET_KEY = os.getenv("APP_SECRET_KEY", "dev-only-change-me")

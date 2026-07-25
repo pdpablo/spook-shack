@@ -52,6 +52,7 @@ docker compose up --build
 
 ```env
 SPOOK_SHACK_HOME=/data
+SPOOK_SHACK_APP_ROOT=/app
 APP_SECRET_KEY=
 SPOOK_SHACK_IMAGE_TAG=latest
 SPOOK_SHACK_FERNET_KEY=
