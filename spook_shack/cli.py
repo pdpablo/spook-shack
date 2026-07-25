@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import time
 
 import uvicorn
@@ -63,7 +64,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     serve = sub.add_parser("serve", help="Run the API server")
     serve.add_argument("--host", default="0.0.0.0")
-    serve.add_argument("--port", type=int, default=8000)
+    serve.add_argument("--port", type=int, default=int(os.environ.get("PORT", "8000")))
     serve.add_argument("--reload", action="store_true")
     serve.add_argument("--log-level", default="info")
     serve.set_defaults(func=cmd_serve)

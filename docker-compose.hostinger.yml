@@ -2,7 +2,6 @@ services:
   web:
     image: ghcr.io/pdpablo/spook-shack:latest
     restart: unless-stopped
-    command: spook-shack serve --host 0.0.0.0 --port 8080
     labels:
       - traefik.enable=true
       - traefik.http.routers.spook-shack.rule=Host(`spook-shack.com`) || Host(`www.spook-shack.com`)
@@ -10,6 +9,7 @@ services:
       - traefik.http.routers.spook-shack.tls.certresolver=letsencrypt
       - traefik.http.services.spook-shack.loadbalancer.server.port=8080
     environment:
+      PORT: 8080
       SPOOK_SHACK_HOME: /data
       SPOOK_SHACK_FERNET_KEY: ${SPOOK_SHACK_FERNET_KEY:-}
       RANSOMWARELIVE_API_TOKEN: ${RANSOMWARELIVE_API_TOKEN:-}

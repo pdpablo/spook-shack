@@ -21,4 +21,4 @@ RUN pip install --no-cache-dir --upgrade pip setuptools wheel \
 
 EXPOSE 8000
 
-CMD ["spook-shack", "serve", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["spook-shack", "serve", "--host", "0.0.0.0"]
