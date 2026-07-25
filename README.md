@@ -27,11 +27,6 @@ Spook Shack is a self-hostable threat intelligence application that ingests publ
 - Frontend: server-rendered HTML/CSS dashboard
 - Deployment: Docker Compose or a GHCR image
 
-## Demo login
-
-- admin / spookshack-admin
-- analyst / spookshack-analyst
-
 ## Deployment paths
 
 ### Local Docker
