@@ -300,14 +300,20 @@ def _records_from_feed_item(item: Mapping[str, Any], source_key: str, source_typ
     )
 
 
-def collect_ransomware_live(client: httpx.Client, source: Mapping[str, Any]) -> list[CollectedRecord]:
-    response = client.get("https://api.ransomware.live/v2/recentvictims")
+def collect_ransomware_live(client: httpx.Client, source: Mapping[str, Any], credentials: Mapping[str, Any] | None = None) -> list[CollectedRecord]:
+    api_key = str((credentials or {}).get("api_key") or "").strip()
+    if not api_key:
+        raise RuntimeError("ransomware.live Pro API requires an X-API-KEY credential")
+    response = client.get(
+        "https://api-pro.ransomware.live/victims/recent",
+        params={"order": "discovered"},
+        headers={"X-API-KEY": api_key},
+    )
     response.raise_for_status()
     payload = _response_json(response)
-    if isinstance(payload, Mapping):
-        items = payload.get("results") or payload.get("victims") or payload.get("data") or []
-    else:
-        items = payload
+    items = payload.get("results") if isinstance(payload, Mapping) else payload
+    if isinstance(items, Mapping):
+        items = items.get("results") or items.get("victims") or items.get("data") or []
     records: list[CollectedRecord] = []
     for item in items or []:
         if not isinstance(item, Mapping):
@@ -317,7 +323,8 @@ def collect_ransomware_live(client: httpx.Client, source: Mapping[str, Any]) -> 
             **item,
             "title": title,
             "source": "ransomware.live",
-            "summary": item.get("description") or item.get("details") or item.get("body"),
+            "summary": item.get("description") or item.get("details") or item.get("body") or item.get("victim") or item.get("group"),
+            "link": item.get("permalink") or item.get("link") or item.get("url"),
         }
         records.append(_records_from_feed_item(record, source["source_key"], source["source_type"]))
     return records
@@ -601,6 +608,8 @@ def ingest_source(conn, source_key: str, *, actor_role: str = "admin", transport
             records = connector(transport, source, credentials)
         elif connector is collect_telegram:
             records = connector(source, credentials)
+        elif connector is collect_ransomware_live:
+            records = connector(client, source, credentials)
         else:
             records = connector(client, source)
 

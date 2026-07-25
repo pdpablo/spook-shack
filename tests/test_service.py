@@ -228,7 +228,8 @@ def test_admin_gate_blocks_source_upsert_and_queue(isolated_home):
 def test_real_connectors_feed_the_correlation_engine(isolated_home):
     def handler(request: httpx.Request) -> httpx.Response:
         url = str(request.url)
-        if url.startswith("https://api.ransomware.live/v2/recentvictims"):
+        if url.startswith("https://api-pro.ransomware.live/victims/recent"):
+            assert request.headers.get("X-API-KEY") == "pro-token"
             return httpx.Response(
                 200,
                 json=[
@@ -298,6 +299,7 @@ def test_real_connectors_feed_the_correlation_engine(isolated_home):
 
     with service.connect() as conn:
         intel.ensure_intel_schema(conn)
+        service.set_source_credentials(conn, "ransomware.live", {"api_key": "pro-token"}, actor_role="admin")
         results = intel.ingest_all_sources(conn, actor_role="admin", transport=transport)
         summary = intel.correlation_summary(conn)
         clusters = intel.cluster_rows(conn, limit=10)
@@ -316,7 +318,7 @@ def test_real_connectors_feed_the_correlation_engine(isolated_home):
 def test_overview_and_correlation_endpoint_reflect_ingested_data(isolated_home):
     def handler(request: httpx.Request) -> httpx.Response:
         url = str(request.url)
-        if url.startswith("https://api.ransomware.live/v2/recentvictims"):
+        if url.startswith("https://api-pro.ransomware.live/victims/recent"):
             return httpx.Response(200, json=[])
         if url.startswith("https://phishunt.io/api/v1/domains"):
             return httpx.Response(200, json={"count": 0, "results": []})
@@ -331,6 +333,7 @@ def test_overview_and_correlation_endpoint_reflect_ingested_data(isolated_home):
 
     with service.connect() as conn:
         intel.ensure_intel_schema(conn)
+        service.set_source_credentials(conn, "ransomware.live", {"api_key": "pro-token"}, actor_role="admin")
         intel.ingest_all_sources(conn, actor_role="admin", transport=transport)
 
     response = asyncio.run(
