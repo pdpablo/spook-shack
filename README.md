@@ -37,7 +37,7 @@ Spook Shack is a self-hostable threat intelligence application that ingests publ
 ### Local Docker
 
 ```bash
-docker compose up
+docker compose up --build
 ```
 
 ### GitHub -> GHCR -> Hostinger Docker Manager

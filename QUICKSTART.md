@@ -21,7 +21,7 @@ Demo users:
 
 ```bash
 cd spook-shack
-docker compose up
+docker compose up --build
 ```
 
 Open:
